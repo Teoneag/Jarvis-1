@@ -4,29 +4,62 @@ import '/utils.dart';
 
 const chatsS = 'chats';
 const messagesS = 'messages';
+const generalS = 'general';
+const chatNamesS = 'chatNames';
 
 class FirestoreM {
   static final _firestore = FirebaseFirestore.instance;
 
   static Future<String> addChat(String chatName) async {
     try {
-      await _firestore.collection(chatsS).doc(chatName).set({});
+      await _firestore.collection(generalS).doc(chatsS).update({
+        chatNamesS: FieldValue.arrayUnion([chatName])
+      });
       return successS;
     } catch (e) {
+      if (e.toString() ==
+          'FirebaseError: [code=not-found]: No document to update: projects/jarvis-tn-1/databases/(default)/documents/general/chats') {
+        await _firestore.collection(generalS).doc(chatsS).set({
+          chatNamesS: [chatName]
+        });
+        return successS;
+      }
       print(e);
       return '$e';
     }
   }
 
-  static Future<String> removeChat(String chatName) async {
+  static Future<DocumentSnapshot> loadChatNames() async {
     try {
-      await _firestore.collection(chatsS).doc(chatName).delete();
-      return successS;
+      return await _firestore.collection(generalS).doc(chatsS).get();
     } catch (e) {
       print(e);
-      return '$e';
+      throw Error();
     }
   }
+
+  static Future<QuerySnapshot> loadMessages(chatName) async {
+    try {
+      return await _firestore
+          .collection(chatsS)
+          .doc(chatName)
+          .collection(messagesS)
+          .get();
+    } catch (e) {
+      print(e);
+      throw Error();
+    }
+  }
+
+  // static Future<String> removeChat(String chatName) async {
+  //   try {
+  //     await _firestore.collection(chatsS).doc(chatName).delete();
+  //     return successS;
+  //   } catch (e) {
+  //     print(e);
+  //     return '$e';
+  //   }
+  // }
 
   static Future<String> sendMessage(Message message, String chatName) async {
     try {

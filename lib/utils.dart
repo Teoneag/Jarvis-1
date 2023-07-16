@@ -14,6 +14,12 @@ class BoolW {
   BoolW(this.v);
 }
 
+class IntW {
+  int v;
+
+  IntW(this.v);
+}
+
 class SyncObj {
   final StateSetter setState;
   final BoolW isSyncing;

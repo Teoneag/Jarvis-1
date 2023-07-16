@@ -11,9 +11,19 @@ class Message {
   DateTime date;
   bool isMe;
 
-  Message(this.text, {this.isMe = true})
-      : uid = const Uuid().v1(),
-        date = DateTime.now();
+  Message({required this.text, String? uid, DateTime? date, bool? isMe})
+      : uid = uid ?? const Uuid().v1(),
+        date = date ?? DateTime.now(),
+        isMe = isMe ?? true;
+
+  factory Message.fromSnap(String uid, Map<String, dynamic> json) {
+    return Message(
+      uid: uid,
+      text: json[textS],
+      date: DateTime.parse(json[dateS]),
+      isMe: json[isMeS],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         textS: text,

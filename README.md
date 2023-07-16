@@ -8,5 +8,11 @@ Personal assistant (like Jarvis form Iron Man)
 4. Handle data out
 Later
 - add more languages
+- archive chats, see archived chats
 
 # ToDo
+- make navigation rail visible only when pressed button / screenwidt > ... , handle case when only 1 chat
+- delete chats
+
+# Questions
+- When should a new conv start automatically? (after how much time)

@@ -55,14 +55,21 @@ class ChatM {
     List<String> chatNames,
     List<Message> messages,
     SyncObj sO,
-    BoolW isSyncing,
+    BoolW isRailSyncing,
+    BoolW isChatSyncing,
   ) async {
-    await loadChatNames(chatNames, sO);
-    await loadMessages(messages, SyncObj(sO.setState, isSyncing), chatNames[0]);
+    isChatSyncing.v = true;
+    await loadChatNames(chatNames, sO, isRailSyncing);
+    await loadMessages(chatNames[0], messages, sO, isChatSyncing);
   }
 
-  static Future loadChatNames(List<String> chatNames, SyncObj sO) async {
+  static Future loadChatNames(
+    List<String> chatNames,
+    SyncObj sO,
+    BoolW isRailSyncing,
+  ) async {
     await syncFun(sO, () async {
+      isRailSyncing.v = true;
       try {
         final snap = await FirestoreM.loadChatNames();
         chatNames.clear();
@@ -70,13 +77,18 @@ class ChatM {
       } catch (e) {
         print(e);
       }
+      isRailSyncing.v = false;
     });
   }
 
   static Future loadMessages(
-      List<Message> messages, SyncObj sO, String chatName) async {
-    print(chatName);
+    String chatName,
+    List<Message> messages,
+    SyncObj sO,
+    BoolW isChatSyncing,
+  ) async {
     await syncFun(sO, () async {
+      isChatSyncing.v = true;
       try {
         final snap = await FirestoreM.loadMessages(chatName);
         messages.clear();
@@ -84,10 +96,10 @@ class ChatM {
             .map((doc) =>
                 Message.fromSnap(doc.id, doc.data() as Map<String, dynamic>))
             .toList());
-        print(messages.map((e) => e.text));
       } catch (e) {
         print(e);
       }
+      isChatSyncing.v = false;
     });
   }
 

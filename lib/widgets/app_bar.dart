@@ -7,8 +7,9 @@ class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
   final SyncObj sO;
   final List<String> chatNames;
+  final VoidCallback onChangeRail;
 
-  const AppBar1(this.chatNames, this.sO, {super.key});
+  const AppBar1(this.chatNames, this.sO, this.onChangeRail, {super.key});
 
   @override
   State<AppBar1> createState() => _AppBar1State();
@@ -26,11 +27,15 @@ class _AppBar1State extends State<AppBar1> {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      leading: IconButton(
+        onPressed: widget.onChangeRail,
+        icon: const Icon(Icons.menu),
+      ),
       title: const Text('Jarvis'), // TODO: change to conv name or date
       actions: [
         IconButton(
-          onPressed: () => ChatM.displayDialog(
-              context, _titleC, widget.sO, widget.chatNames),
+          onPressed: () =>
+              ChatM.addDialog(context, _titleC, widget.sO, widget.chatNames),
           icon: const Icon(Icons.add),
         ),
         widget.sO.isSyncing.v

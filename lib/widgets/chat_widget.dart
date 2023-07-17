@@ -17,6 +17,7 @@ class ChatWidget extends StatefulWidget {
 
 class _ChatWidgetState extends State<ChatWidget> {
   final _messageC = TextEditingController();
+  final _focusNode = FocusNode();
   late final SyncObj sO;
 
   @override
@@ -28,6 +29,7 @@ class _ChatWidgetState extends State<ChatWidget> {
   @override
   void dispose() {
     _messageC.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -53,19 +55,23 @@ class _ChatWidgetState extends State<ChatWidget> {
         Padding(
           padding: const EdgeInsets.all(10),
           child: TextField(
-            controller: _messageC,
-            decoration: InputDecoration(
-              hintText: 'Type a message',
-              border: const OutlineInputBorder(),
-              suffixIcon: IconButton(
-                onPressed: () => ChatM.sendMessage(
-                    _messageC, widget.chatName, sO, widget.messages),
-                icon: const Icon(Icons.send),
+              autofocus: true,
+              focusNode: _focusNode,
+              controller: _messageC,
+              decoration: InputDecoration(
+                hintText: 'Type a message',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  onPressed: () => ChatM.sendMessage(
+                      _messageC, widget.chatName, sO, widget.messages),
+                  icon: const Icon(Icons.send),
+                ),
               ),
-            ),
-            onSubmitted: (_) => ChatM.sendMessage(
-                _messageC, widget.chatName, sO, widget.messages),
-          ),
+              onSubmitted: (_) {
+                ChatM.sendMessage(
+                    _messageC, widget.chatName, sO, widget.messages);
+                _focusNode.requestFocus();
+              }),
         ),
       ],
     );

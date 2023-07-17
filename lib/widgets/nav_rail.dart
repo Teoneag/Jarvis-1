@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jarvis_1/chat/chat_methods.dart';
 import '/utils.dart';
 
 class NavBar1 extends StatelessWidget {
@@ -6,51 +7,44 @@ class NavBar1 extends StatelessWidget {
   final ValueChanged<int> onIndexChange;
   final int navIndex;
   final BoolW isSyncing;
+  final SyncObj sO;
 
-  // add RailState
-
-  const NavBar1(
-      this.chatNames, this.onIndexChange, this.navIndex, this.isSyncing,
+  const NavBar1(this.chatNames, this.onIndexChange, this.navIndex,
+      this.isSyncing, this.sO,
       {super.key});
 
   @override
   Widget build(BuildContext context) {
     return isSyncing.v
         ? loadingCenter()
-        : chatNames.length < 2
-            ? const Text('Please add one more chat')
-            : NavigationRail(
-                // TODO: make it 3 states: extended, hover, hidden
-                // TODO: make the highlight look right
-                minWidth: 90,
-                destinations: chatNames.map((chat) {
-                  return NavigationRailDestination(
-                    icon: Row(
-                      children: [
-                        SizedBox(
-                          width: 90,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              chat,
-                              overflow: TextOverflow.ellipsis,
-                              softWrap: false,
-                            ),
-                          ),
-                        ),
-                        // TODO: add delete chat
-                      ],
-                    ),
-                    label: Text(chat),
+        : chatNames.isEmpty
+            ? const Text('Please add at least one chat')
+            : chatNames.length == 1
+                ? railTile(context, chatNames[0], sO, chatNames)
+                : NavigationRail(
+                    // TODO: make it hover if the screen is smaller than x
+                    groupAlignment: 0,
+                    destinations: chatNames.map((chat) {
+                      return NavigationRailDestination(
+                        icon: railTile(context, chat, sO, chatNames),
+                        label: Text(chat),
+                      );
+                    }).toList(),
+                    selectedIndex: navIndex,
+                    onDestinationSelected: (int index) => onIndexChange(index),
                   );
-                }).toList(),
-                selectedIndex: navIndex,
-                onDestinationSelected: (int index) => onIndexChange(index),
-              );
   }
 }
 
-// enum RailState {
-//   visible,
-//   hidden,
-// }
+Widget railTile(BuildContext context, String chat, SyncObj sO,
+        List<String> chatNames) =>
+    GestureDetector(
+      onLongPress: () => ChatM.removeDialog(context, chat, sO, chatNames),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        child: Text(
+          chat,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );

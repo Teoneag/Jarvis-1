@@ -51,15 +51,26 @@ class FirestoreM {
     }
   }
 
-  // static Future<String> removeChat(String chatName) async {
-  //   try {
-  //     await _firestore.collection(chatsS).doc(chatName).delete();
-  //     return successS;
-  //   } catch (e) {
-  //     print(e);
-  //     return '$e';
-  //   }
-  // }
+  static Future<String> removeChat(String chatName) async {
+    try {
+      await _firestore.collection(generalS).doc(chatsS).update({
+        chatNamesS: FieldValue.arrayRemove([chatName])
+      });
+
+      final snap = await _firestore
+          .collection(chatsS)
+          .doc(chatName)
+          .collection(messagesS)
+          .get();
+
+      await Future.wait(snap.docs.map((doc) => doc.reference.delete()));
+      // TODO: if i add any fields, delete the doc as well
+      return successS;
+    } catch (e) {
+      print(e);
+      return '$e';
+    }
+  }
 
   static Future<String> sendMessage(Message message, String chatName) async {
     try {

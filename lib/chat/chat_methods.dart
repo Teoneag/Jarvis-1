@@ -5,8 +5,8 @@ import '/firestore/firestore_methods.dart';
 import '/utils.dart';
 
 class ChatM {
-  static Future displayDialog(BuildContext context,
-      TextEditingController titleC, SyncObj sO, List<String> chatNames) async {
+  static Future addDialog(BuildContext context, TextEditingController titleC,
+      SyncObj sO, List<String> chatNames) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -41,15 +41,43 @@ class ChatM {
     );
   }
 
+  static Future removeDialog(BuildContext context, String chatName, SyncObj sO,
+      List<String> chatNames) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove a task'),
+        content: Text('Are you sure you want to remove $chatName?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              removeChat(chatName, sO, chatNames);
+            },
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+  }
+
   static Future addChat(
       String chatName, SyncObj sO, List<String> chatNames) async {
     chatNames.add(chatName);
     await syncFun(sO, () async => await FirestoreM.addChat(chatName));
   }
 
-  // static Future removeChat(String chatName, SyncObj sO) async {
-  //   await syncFun(sO, () async => await FirestoreM.removeChat(chatName));
-  // }
+  static Future removeChat(
+      String chatName, SyncObj sO, List<String> chatNames) async {
+    chatNames.remove(chatName);
+    await syncFun(sO, () async => await FirestoreM.removeChat(chatName));
+  }
 
   static Future loadChatNamesAndChat(
     List<String> chatNames,
@@ -60,6 +88,10 @@ class ChatM {
   ) async {
     isChatSyncing.v = true;
     await loadChatNames(chatNames, sO, isRailSyncing);
+    if (chatNames.isEmpty) {
+      isChatSyncing.v = false;
+      return;
+    }
     await loadMessages(chatNames[0], messages, sO, isChatSyncing);
   }
 

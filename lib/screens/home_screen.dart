@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _isChatSyncing = BoolW(false);
   late final SyncObj _sO;
   int _navIndex = 0;
+  final _isRailHidden = BoolW(false);
   final List<String> _chatNames = [];
   final List<Message> _messages = [];
 
@@ -37,18 +38,32 @@ class _HomeScreenState extends State<HomeScreen> {
     ChatM.loadMessages(_chatNames[_navIndex], _messages, _sO, _isChatSyncing);
   }
 
+  void _onRailChange() {
+    setState(() {
+      _isRailHidden.v = !_isRailHidden.v;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar1(_chatNames, _sO),
+      appBar: AppBar1(_chatNames, _sO, _onRailChange),
       body: Row(
         children: [
-          NavBar1(_chatNames, _onIndexChange, _navIndex, _isRailSyncing),
-          const VerticalDivider(),
+          !_isRailHidden.v
+              ? Row(children: [
+                  NavBar1(_chatNames, _onIndexChange, _navIndex, _isRailSyncing,
+                      _sO),
+                  const VerticalDivider(),
+                ])
+              : Container(),
           Expanded(
             child: _isChatSyncing.v
                 ? loadingCenter()
-                : ChatWidget(_messages, _chatNames[_navIndex], _isChatSyncing),
+                : _chatNames.isEmpty
+                    ? const Text('Please select a chat')
+                    : ChatWidget(
+                        _messages, _chatNames[_navIndex], _isChatSyncing),
           ),
         ],
       ),

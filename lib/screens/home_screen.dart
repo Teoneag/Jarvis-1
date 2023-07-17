@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-
+import '/models/message_model.dart';
 import '/utils.dart';
 import '/chat/chat_methods.dart';
-import '/widgets/chat_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,10 +13,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _isSyncing = BoolW(false);
   final _isRailSyncing = BoolW(false);
+  final _isChatSyncing = BoolW(false);
   final _titleC = TextEditingController();
+  final _messageC = TextEditingController();
   late final SyncObj sO;
   late final SyncObj sO2;
+  late final SyncObj sO3;
   List<String> chatNames = [];
+  List<Message> messages = [];
   int _index = 0;
 
   @override
@@ -25,12 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     sO = SyncObj(setState, _isSyncing);
     sO2 = SyncObj(setState, _isRailSyncing);
-    ChatM.loadChatNames(chatNames, sO2);
+    sO3 = SyncObj(setState, _isChatSyncing);
+    ChatM.loadChatNamesAndChat(chatNames, messages, sO2, _isChatSyncing);
   }
 
   @override
   void dispose() {
     _titleC.dispose();
+    _messageC.dispose();
     super.dispose();
   }
 
@@ -50,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ? const CircularProgressIndicator()
               : IconButton(
                   onPressed: () {
-                    ChatM.loadChatNames(chatNames, sO2);
+                    // ChatM.loadChatNames(chatNames, sO2); // TODO: make this
                   },
                   icon: const Icon(Icons.sync),
                 ),
@@ -92,12 +97,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         onDestinationSelected: (int index) {
                           setState(() {
                             _index = index;
+                            ChatM.loadMessages(messages, sO3, chatNames[index]);
                           });
                         },
                       ),
                 const VerticalDivider(),
                 Expanded(
-                  child: ChatWidget(chatNames[_index]),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _isChatSyncing.v
+                            ? loadingCenter()
+                            : ListView.builder(
+                                itemCount: messages.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    title: Text(messages[index].text),
+                                  );
+                                },
+                              ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: TextField(
+                          controller: _messageC,
+                          decoration: InputDecoration(
+                            hintText: 'Type a message',
+                            border: const OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              onPressed: () => ChatM.sendMessage(
+                                  _messageC, chatNames[_index], sO, messages),
+                              icon: const Icon(Icons.send),
+                            ),
+                          ),
+                          onSubmitted: (_) => ChatM.sendMessage(
+                              _messageC, chatNames[_index], sO, messages),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

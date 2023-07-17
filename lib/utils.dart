@@ -20,6 +20,12 @@ class IntW {
   IntW(this.v);
 }
 
+class StringW {
+  String v;
+
+  StringW(this.v);
+}
+
 class SyncObj {
   final StateSetter setState;
   final BoolW isSyncing;

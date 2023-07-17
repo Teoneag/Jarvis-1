@@ -51,6 +51,16 @@ class ChatM {
   //   await syncFun(sO, () async => await FirestoreM.removeChat(chatName));
   // }
 
+  static Future loadChatNamesAndChat(
+    List<String> chatNames,
+    List<Message> messages,
+    SyncObj sO,
+    BoolW isSyncing,
+  ) async {
+    await loadChatNames(chatNames, sO);
+    await loadMessages(messages, SyncObj(sO.setState, isSyncing), chatNames[0]);
+  }
+
   static Future loadChatNames(List<String> chatNames, SyncObj sO) async {
     await syncFun(sO, () async {
       try {
@@ -81,11 +91,12 @@ class ChatM {
     });
   }
 
-  static Future sendMessage(
-      TextEditingController textC, String chatName, SyncObj sO) async {
+  static Future sendMessage(TextEditingController textC, String chatName,
+      SyncObj sO, List<Message> messages) async {
     await syncFun(sO, () async {
       try {
         await FirestoreM.sendMessage(Message(text: textC.text), chatName);
+        messages.add(Message(text: textC.text));
         textC.clear();
       } catch (e) {
         print(e);

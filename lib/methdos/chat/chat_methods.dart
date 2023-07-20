@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '/models/message_model.dart';
 import '/firestore/firestore_methods.dart';
 
@@ -141,11 +142,35 @@ class ChatM {
       try {
         await FirestoreM.sendMessage(Message(text: textC.text), chatName);
         messages.add(Message(text: textC.text));
+        // print(JarvisM.isSentenceQuestion(textC.text));
         textC.clear();
       } catch (e) {
         print(e);
       }
     });
+  }
+
+  static void handleKeyPress(
+    RawKeyEvent event,
+    IntW i,
+    TextEditingController c,
+    List<Message> messages,
+  ) {
+    if (event is RawKeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.arrowUp) {
+      i.v--;
+      if (i.v < 0) i.v = 0;
+      c.text = messages[i.v].text;
+    } else if (event is RawKeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.arrowDown) {
+      i.v++;
+      if (i.v > messages.length) i.v = messages.length;
+      if (i.v == messages.length) {
+        c.clear();
+      } else {
+        c.text = messages[i.v].text;
+      }
+    }
   }
 }
 

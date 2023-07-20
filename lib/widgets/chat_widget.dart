@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '/chat/chat_methods.dart';
+import '../methdos/chat/chat_methods.dart';
 import '/models/message_model.dart';
 import '/utils.dart';
 
@@ -19,11 +19,13 @@ class _ChatWidgetState extends State<ChatWidget> {
   final _messageC = TextEditingController();
   final _focusNode = FocusNode();
   late final SyncObj sO;
+  late final IntW messageIndex;
 
   @override
   void initState() {
     super.initState();
     sO = SyncObj(setState, widget.isChatSyncing);
+    messageIndex = IntW(widget.messages.length - 1);
   }
 
   @override
@@ -54,24 +56,29 @@ class _ChatWidgetState extends State<ChatWidget> {
         ),
         Padding(
           padding: const EdgeInsets.all(10),
-          child: TextField(
-              autofocus: true,
-              focusNode: _focusNode,
-              controller: _messageC,
-              decoration: InputDecoration(
-                hintText: 'Type a message',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  onPressed: () => ChatM.sendMessage(
-                      _messageC, widget.chatName, sO, widget.messages),
-                  icon: const Icon(Icons.send),
+          child: RawKeyboardListener(
+            focusNode: FocusNode(),
+            onKey: (event) => ChatM.handleKeyPress(
+                event, messageIndex, _messageC, widget.messages),
+            child: TextField(
+                autofocus: true,
+                focusNode: _focusNode,
+                controller: _messageC,
+                decoration: InputDecoration(
+                  hintText: 'Type a message',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    onPressed: () => ChatM.sendMessage(
+                        _messageC, widget.chatName, sO, widget.messages),
+                    icon: const Icon(Icons.send),
+                  ),
                 ),
-              ),
-              onSubmitted: (_) {
-                ChatM.sendMessage(
-                    _messageC, widget.chatName, sO, widget.messages);
-                _focusNode.requestFocus();
-              }),
+                onSubmitted: (_) {
+                  ChatM.sendMessage(
+                      _messageC, widget.chatName, sO, widget.messages);
+                  _focusNode.requestFocus();
+                }),
+          ),
         ),
       ],
     );

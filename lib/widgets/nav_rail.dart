@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jarvis_1/chat/chat_methods.dart';
+import 'package:jarvis_1/methdos/chat/chat_methods.dart';
 import '/utils.dart';
 
 class NavBar1 extends StatelessWidget {

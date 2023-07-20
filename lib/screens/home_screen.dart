@@ -4,7 +4,7 @@ import '/widgets/nav_rail.dart';
 import '/widgets/app_bar.dart';
 import '/models/message_model.dart';
 import '/utils.dart';
-import '/chat/chat_methods.dart';
+import '../methdos/chat/chat_methods.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

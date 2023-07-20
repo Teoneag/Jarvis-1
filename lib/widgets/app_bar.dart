@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/utils.dart';
-import '/chat/chat_methods.dart';
+import '../methdos/chat/chat_methods.dart';
 
 class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
   @override

@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import 'package:jarvis_1/merriam_webster/m_w_api_methods.dart';
+
 class JarvisM {
   static bool isSentenceQuestion(String sentence) {
     try {
@@ -9,6 +12,30 @@ class JarvisM {
     } catch (e) {
       print(e);
       return false;
+    }
+  }
+
+  static Future processSentence(
+      String sentence, TextEditingController textC) async {
+    try {
+      await MWApiM.getJson('word');
+      // TODO: detect verbs
+      // final lowercaseText = sentence.trim().toLowerCase();
+      // final words = lowercaseText.split(' ');
+
+      // TODO: split in parts execute every part
+      // if (isSentenceQuestion(sentence)) {
+      //   // handle question
+      //   return;
+      // }
+
+      // handle statement
+      // split it in parts
+      // detect verbs
+
+      // TODO: at the end say smth like ok
+    } catch (e) {
+      print(e);
     }
   }
 }

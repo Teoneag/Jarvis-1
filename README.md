@@ -13,11 +13,14 @@ Later
 - archive chats, see archived chats
 
 # ToDo
+- make MWApi detect verbs 
 0. make this work
-My name is Teon
 when somebody greets u, u should greet back
 "hello" is a greeting
 hello
+
+My name is Teon
+what is my name
 
 1. Detect questions
 - ? at the end

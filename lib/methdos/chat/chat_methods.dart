@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:jarvis_1/methdos/jarvis/jarvis_methods.dart';
 import '/models/message_model.dart';
 import '/firestore/firestore_methods.dart';
 
@@ -140,10 +141,12 @@ class ChatM {
       SyncObj sO, List<Message> messages) async {
     await syncFun(sO, () async {
       try {
-        await FirestoreM.sendMessage(Message(text: textC.text), chatName);
-        messages.add(Message(text: textC.text));
+        final text = textC.text.trim();
+        await FirestoreM.sendMessage(Message(text: text), chatName);
+        messages.add(Message(text: text));
         // print(JarvisM.isSentenceQuestion(textC.text));
         textC.clear();
+        await JarvisM.processSentence(text, textC);
       } catch (e) {
         print(e);
       }

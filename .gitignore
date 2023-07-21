@@ -1,5 +1,6 @@
 # Api Keys
 /lib/firebase_options.dart
+/lib/merriam_webster/m_w_api_key.dart
 
 # Miscellaneous
 *.class

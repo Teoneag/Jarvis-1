@@ -12,8 +12,7 @@ class MWApiM {
       print(urlString);
       final url = Uri.parse(urlString);
       final response = await http.get(url);
-      print(response.body);
-      return 'json';
+      return response.body;
     } catch (e) {
       print(e);
       return '$e';

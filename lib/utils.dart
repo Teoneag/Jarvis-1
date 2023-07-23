@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 const successS = 'success';
 
+const unknownS = 'unknown';
+
 Widget loadingCenter() {
   return const Center(
     child: CircularProgressIndicator(),

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:jarvis_1/methdos/jarvis/jarvis_methods.dart';
+
+import '/methdos/jarvis/jarvis_methods.dart';
 import '/models/message_model.dart';
 import '/firestore/firestore_methods.dart';
-
 import '/utils.dart';
 
 class ChatM {
-  static Future addDialog(BuildContext context, TextEditingController titleC,
-      SyncObj sO, List<String> chatNames) async {
+  static Future addDialog(
+    BuildContext context,
+    TextEditingController titleC,
+    RailObj rO,
+    final ValueChanged<int> onIndexChange,
+  ) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -19,7 +23,7 @@ class ChatM {
           autofocus: true,
           onSubmitted: (value) {
             Navigator.of(context).pop();
-            addChat(titleC.text, sO, chatNames);
+            _addChat(titleC.text, rO, onIndexChange);
             titleC.clear();
           },
         ),
@@ -33,7 +37,7 @@ class ChatM {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              addChat(titleC.text, sO, chatNames);
+              _addChat(titleC.text, rO, onIndexChange);
               titleC.clear();
             },
             child: const Text('Add'),
@@ -43,13 +47,27 @@ class ChatM {
     );
   }
 
-  static Future removeDialog(BuildContext context, String chatName, SyncObj sO,
-      List<String> chatNames) async {
+  static Future _addChat(
+      String chatName, RailObj rO, final ValueChanged<int> onChangeRail) async {
+    rO.chatNames.add(chatName);
+    onChangeRail(rO.chatNames.length - 1);
+    await syncFun(rO.sO, () async => await FirestoreM.addChat(chatName));
+  }
+
+  static Future removeDialog(
+    BuildContext context,
+    RailObj rO,
+    ChatObj cO,
+    int removeI,
+    int selectedI,
+    ValueChanged<int> onIndexChange,
+  ) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remove a task'),
-        content: Text('Are you sure you want to remove $chatName?'),
+        content:
+            Text('Are you sure you want to remove ${rO.chatNames[removeI]}?'),
         actions: [
           TextButton(
             onPressed: () {
@@ -60,7 +78,7 @@ class ChatM {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              removeChat(chatName, sO, chatNames);
+              _removeChat(rO, cO, removeI, selectedI, onIndexChange);
             },
             child: const Text('Remove'),
           ),
@@ -69,81 +87,75 @@ class ChatM {
     );
   }
 
-  static Future addChat(
-      String chatName, SyncObj sO, List<String> chatNames) async {
-    chatNames.add(chatName);
-    await syncFun(sO, () async => await FirestoreM.addChat(chatName));
-  }
-
-  static Future removeChat(
-      String chatName, SyncObj sO, List<String> chatNames) async {
-    chatNames.remove(chatName);
-    await syncFun(sO, () async => await FirestoreM.removeChat(chatName));
-  }
-
-  static Future loadChatNamesAndChat(
-    List<String> chatNames,
-    List<Message> messages,
-    SyncObj sO,
-    BoolW isRailSyncing,
-    BoolW isChatSyncing,
+  static Future _removeChat(
+    RailObj rO,
+    ChatObj cO,
+    int removeI,
+    int selectedI,
+    final ValueChanged<int> onIndexChange,
   ) async {
-    isChatSyncing.v = true;
-    await loadChatNames(chatNames, sO, isRailSyncing);
-    if (chatNames.isEmpty) {
-      isChatSyncing.v = false;
-      return;
+    try {
+      final chatName = rO.chatNames[removeI];
+      rO.sO.setState(() {
+        rO.chatNames.removeAt(removeI);
+      });
+      if (rO.chatNames.isNotEmpty) {
+        if (removeI == selectedI) {
+          int newI = selectedI - 1;
+          if (newI < 0) newI = 0;
+          onIndexChange(newI);
+        } else if (removeI < selectedI) {
+          onIndexChange(selectedI - 1);
+        }
+      }
+      await syncFun(rO.sO, () async => await FirestoreM.removeChat(chatName));
+    } catch (e) {
+      print(e);
     }
-    await loadMessages(chatNames[0], messages, sO, isChatSyncing);
   }
 
-  static Future loadChatNames(
-    List<String> chatNames,
-    SyncObj sO,
-    BoolW isRailSyncing,
-  ) async {
-    await syncFun(sO, () async {
-      isRailSyncing.v = true;
+  static Future loadChatNamesAndChat(RailObj rO, ChatObj cO) async {
+    await loadChatNames(rO);
+    if (rO.chatNames.isEmpty) {
+      await loadMessages(rO.chatNames[0], cO);
+    }
+  }
+
+  static Future loadChatNames(RailObj rO) async {
+    await syncFun(rO.sO, () async {
       try {
         final snap = await FirestoreM.loadChatNames();
-        chatNames.clear();
-        chatNames.addAll((snap[chatNamesS] as List<dynamic>).cast<String>());
+        rO.chatNames.clear();
+        rO.chatNames.addAll((snap[chatNamesS] as List<dynamic>).cast<String>());
       } catch (e) {
         print(e);
       }
-      isRailSyncing.v = false;
     });
   }
 
-  static Future loadMessages(
-    String chatName,
-    List<Message> messages,
-    SyncObj sO,
-    BoolW isChatSyncing,
-  ) async {
-    await syncFun(sO, () async {
-      isChatSyncing.v = true;
+  static Future loadMessages(String chatName, ChatObj cO) async {
+    await syncFun(cO.sO, () async {
       try {
         final snap = await FirestoreM.loadMessages(chatName);
-        messages.clear();
-        messages.addAll(snap.docs
+        cO.messages.clear();
+        cO.messages.addAll(snap.docs
             .map((doc) =>
                 Message.fromSnap(doc.id, doc.data() as Map<String, dynamic>))
             .toList());
       } catch (e) {
         print(e);
       }
-      isChatSyncing.v = false;
     });
   }
 
-  static Future sendMessage(TextEditingController textC, String chatName,
-      SyncObj sO, List<Message> messages) async {
-    await syncFun(sO, () async {
+  static Future sendMessage(
+      TextEditingController textC, String chatName, ChatObj cO) async {
+    if (textC.text.trim().isEmpty) return;
+    await syncFun(cO.sO, () async {
       try {
         final text = textC.text.trim();
         await FirestoreM.sendMessage(Message(text: text), chatName);
-        messages.add(Message(text: text));
+        cO.messages.add(Message(text: text));
         // print(JarvisM.isSentenceQuestion(textC.text));
         textC.clear();
         await JarvisM.processSentence(text, textC);
@@ -185,4 +197,18 @@ Future<void> syncFun(SyncObj sO, Function callback) async {
   sO.setState(() {
     sO.isSyncing.v = false;
   });
+}
+
+class RailObj {
+  final List<String> chatNames;
+  final SyncObj sO;
+
+  RailObj(this.chatNames, this.sO);
+}
+
+class ChatObj {
+  final List<Message> messages;
+  final SyncObj sO;
+
+  ChatObj(this.messages, this.sO);
 }

@@ -13,8 +13,11 @@ Later
 - archive chats, see archived chats
 
 # ToDo
+- order the messages cronologically
 - make MWApi detect verbs 
 0. make this work
+I am teo.
+Who am I?
 when somebody greets u, u should greet back
 "hello" is a greeting
 hello

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '/widgets/chat_widget.dart';
-import '/widgets/nav_rail.dart';
-import '/widgets/app_bar.dart';
-import '/models/message_model.dart';
 import '/utils.dart';
-import '../methdos/chat/chat_methods.dart';
+import '/models/message_model.dart';
+import '/methdos/chat/chat_methods.dart';
+import '/widgets/app_bar.dart';
+import '/widgets/nav_rail.dart';
+import '/widgets/chat_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,28 +14,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _isSyncing = BoolW(false);
+  // final _isAppSyncing = BoolW(false);
   final _isRailSyncing = BoolW(false);
   final _isChatSyncing = BoolW(false);
-  late final SyncObj _sO;
   int _navIndex = 0;
   final _isRailHidden = BoolW(false);
   final List<String> _chatNames = [];
   final List<Message> _messages = [];
+  late final RailObj rO;
+  late final ChatObj cO;
 
   @override
   void initState() {
     super.initState();
-    _sO = SyncObj(setState, _isSyncing);
-    ChatM.loadChatNamesAndChat(
-        _chatNames, _messages, _sO, _isRailSyncing, _isChatSyncing);
+    rO = RailObj(_chatNames, SyncObj(setState, _isRailSyncing));
+    cO = ChatObj(_messages, SyncObj(setState, _isChatSyncing));
+    ChatM.loadChatNamesAndChat(rO, cO);
   }
 
   void _onIndexChange(int index) {
     setState(() {
       _navIndex = index;
     });
-    ChatM.loadMessages(_chatNames[_navIndex], _messages, _sO, _isChatSyncing);
+    ChatM.loadMessages(_chatNames[_navIndex], cO);
   }
 
   void _onRailChange() {
@@ -47,13 +48,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar1(_chatNames, _sO, _onRailChange),
+      appBar: AppBar1(rO, _onRailChange, _onIndexChange),
       body: Row(
         children: [
           !_isRailHidden.v
               ? Row(children: [
-                  NavBar1(_chatNames, _onIndexChange, _navIndex, _isRailSyncing,
-                      _sO),
+                  NavBar1(rO, cO, _onIndexChange, _navIndex),
                   const VerticalDivider(),
                 ])
               : Container(),
@@ -62,8 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? loadingCenter()
                 : _chatNames.isEmpty
                     ? const Text('Please select a chat')
-                    : ChatWidget(
-                        _messages, _chatNames[_navIndex], _isChatSyncing),
+                    : ChatWidget(_chatNames[_navIndex], cO),
           ),
         ],
       ),

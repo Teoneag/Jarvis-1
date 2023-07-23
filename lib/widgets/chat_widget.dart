@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import '../methdos/chat/chat_methods.dart';
-import '/models/message_model.dart';
 import '/utils.dart';
 
 class ChatWidget extends StatefulWidget {
-  final List<Message> messages;
-  final BoolW isChatSyncing;
   final String chatName;
+  final ChatObj cO;
 
-  const ChatWidget(this.messages, this.chatName, this.isChatSyncing,
-      {super.key});
+  const ChatWidget(this.chatName, this.cO, {super.key});
 
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
 }
+
+// TODO: solve the flickering with moveing the cO as an internal parameter, and calling init only when the chatName changes
 
 class _ChatWidgetState extends State<ChatWidget> {
   final _messageC = TextEditingController();
@@ -24,15 +23,14 @@ class _ChatWidgetState extends State<ChatWidget> {
   @override
   void initState() {
     super.initState();
-    sO = SyncObj(setState, widget.isChatSyncing);
-    messageIndex = IntW(widget.messages.length - 1);
+    messageIndex = IntW(widget.cO.messages.length - 1);
   }
 
   @override
   void dispose() {
+    super.dispose();
     _messageC.dispose();
     _focusNode.dispose();
-    super.dispose();
   }
 
   @override
@@ -41,9 +39,9 @@ class _ChatWidgetState extends State<ChatWidget> {
       children: [
         Expanded(
           child: ListView.builder(
-            itemCount: widget.messages.length,
+            itemCount: widget.cO.messages.length,
             itemBuilder: (context, index) {
-              final message = widget.messages[index];
+              final message = widget.cO.messages[index];
               return ListTile(
                 title: Align(
                     alignment: message.isMe
@@ -59,7 +57,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: RawKeyboardListener(
             focusNode: FocusNode(),
             onKey: (event) => ChatM.handleKeyPress(
-                event, messageIndex, _messageC, widget.messages),
+                event, messageIndex, _messageC, widget.cO.messages),
             child: TextField(
                 autofocus: true,
                 focusNode: _focusNode,
@@ -69,14 +67,13 @@ class _ChatWidgetState extends State<ChatWidget> {
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     onPressed: () => ChatM.sendMessage(
-                        _messageC, widget.chatName, sO, widget.messages),
+                        _messageC, widget.chatName, widget.cO),
                     icon: const Icon(Icons.send),
                   ),
                 ),
                 onSubmitted: (_) {
-                  ChatM.sendMessage(
-                      _messageC, widget.chatName, sO, widget.messages);
-                  _focusNode.requestFocus();
+                  ChatM.sendMessage(_messageC, widget.chatName, widget.cO);
+                  _focusNode.requestFocus(); // TODO: Make it autoscroll
                 }),
           ),
         ),

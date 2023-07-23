@@ -1,50 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:jarvis_1/methdos/chat/chat_methods.dart';
 import '/utils.dart';
+import '/methdos/chat/chat_methods.dart';
 
 class NavBar1 extends StatelessWidget {
-  final List<String> chatNames;
+  final RailObj rO;
+  final ChatObj cO;
   final ValueChanged<int> onIndexChange;
   final int navIndex;
-  final BoolW isSyncing;
-  final SyncObj sO;
 
-  const NavBar1(this.chatNames, this.onIndexChange, this.navIndex,
-      this.isSyncing, this.sO,
+  const NavBar1(this.rO, this.cO, this.onIndexChange, this.navIndex,
       {super.key});
 
   @override
   Widget build(BuildContext context) {
-    return isSyncing.v
+    return rO.sO.isSyncing.v
         ? loadingCenter()
-        : chatNames.isEmpty
+        : rO.chatNames.isEmpty
             ? const Text('Please add at least one chat')
-            : chatNames.length == 1
-                ? railTile(context, chatNames[0], sO, chatNames)
+            : rO.chatNames.length == 1
+                ? railTile(context, rO, cO, 0, navIndex, onIndexChange)
                 : NavigationRail(
                     // TODO: make it hover if the screen is smaller than x
                     groupAlignment: 0,
-                    destinations: chatNames.map((chat) {
-                      return NavigationRailDestination(
-                        icon: railTile(context, chat, sO, chatNames),
-                        label: Text(chat),
-                      );
-                    }).toList(),
+                    destinations: [
+                      for (int i = 0; i < rO.chatNames.length; i++)
+                        NavigationRailDestination(
+                          icon: railTile(
+                              context, rO, cO, i, navIndex, onIndexChange),
+                          label: Text(rO.chatNames[i]),
+                        )
+                    ],
                     selectedIndex: navIndex,
                     onDestinationSelected: (int index) => onIndexChange(index),
                   );
   }
 }
 
-Widget railTile(BuildContext context, String chat, SyncObj sO,
-        List<String> chatNames) =>
-    GestureDetector(
-      onLongPress: () => ChatM.removeDialog(context, chat, sO, chatNames),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Text(
-          chat,
-          overflow: TextOverflow.ellipsis,
-        ),
+Widget railTile(
+  BuildContext context,
+  RailObj rO,
+  ChatObj cO,
+  int removeI,
+  int selectedI,
+  ValueChanged<int> onIndexChange,
+) {
+  return GestureDetector(
+    onLongPress: () => ChatM.removeDialog(
+      context,
+      rO,
+      cO,
+      removeI,
+      selectedI,
+      onIndexChange,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Text(
+        rO.chatNames[removeI],
+        overflow: TextOverflow.ellipsis,
       ),
-    );
+    ),
+  );
+}

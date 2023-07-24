@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import '/utils.dart';
-import '/models/message_model.dart';
-import '/methdos/chat/chat_methods.dart';
 import '/widgets/app_bar.dart';
 import '/widgets/nav_rail.dart';
 import '/widgets/chat_widget.dart';
@@ -14,55 +11,42 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // final _isAppSyncing = BoolW(false);
-  final _isRailSyncing = BoolW(false);
-  final _isChatSyncing = BoolW(false);
-  int _navIndex = 0;
-  final _isRailHidden = BoolW(false);
+  bool _isRailHidden = false;
+  String _chatName = '';
   final List<String> _chatNames = [];
-  final List<Message> _messages = [];
-  late final RailObj rO;
-  late final ChatObj cO;
 
-  @override
-  void initState() {
-    super.initState();
-    rO = RailObj(_chatNames, SyncObj(setState, _isRailSyncing));
-    cO = ChatObj(_messages, SyncObj(setState, _isChatSyncing));
-    ChatM.loadChatNamesAndChat(rO, cO);
-  }
-
-  void _onIndexChange(int index) {
+  void _onChangeRail() {
     setState(() {
-      _navIndex = index;
-    });
-    ChatM.loadMessages(_chatNames[_navIndex], cO);
-  }
-
-  void _onRailChange() {
-    setState(() {
-      _isRailHidden.v = !_isRailHidden.v;
+      _isRailHidden = !_isRailHidden;
     });
   }
+
+  void _onChatChange(String chatName) {
+    if (chatName == _chatName) return;
+    setState(() {
+      _chatName = chatName;
+    });
+    print(_chatName);
+  }
+
+  void _addChat(String title) {}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar1(rO, _onRailChange, _onIndexChange),
+      appBar: AppBar1(_onChangeRail, _addChat),
       body: Row(
         children: [
-          !_isRailHidden.v
-              ? Row(children: [
-                  NavBar1(rO, cO, _onIndexChange, _navIndex),
-                  const VerticalDivider(),
-                ])
+          !_isRailHidden
+              ? Row(
+                  children: [
+                    NavBar1(_onChatChange),
+                    const VerticalDivider(),
+                  ],
+                )
               : Container(),
           Expanded(
-            child: _isChatSyncing.v
-                ? loadingCenter()
-                : _chatNames.isEmpty
-                    ? const Text('Please select a chat')
-                    : ChatWidget(_chatNames[_navIndex], cO),
+            child: ChatWidget(_chatName),
           ),
         ],
       ),

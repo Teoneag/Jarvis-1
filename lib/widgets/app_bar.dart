@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../methdos/chat/chat_methods.dart';
 
 class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
-  final RailObj rO;
   final VoidCallback onChangeRail;
-  final ValueChanged<int> onIndexChange;
-  const AppBar1(this.rO, this.onChangeRail, this.onIndexChange, {super.key});
+  final void Function(String) addChat;
+
+  const AppBar1(this.onChangeRail, this.addChat, {super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -15,13 +14,14 @@ class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _AppBar1State extends State<AppBar1> {
+  final _titleC = TextEditingController();
+
   @override
   void dispose() {
     super.dispose();
     _titleC.dispose();
   }
 
-  final _titleC = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -33,8 +33,7 @@ class _AppBar1State extends State<AppBar1> {
       title: const Text('Jarvis'), // TODO: change to conv name or date
       actions: [
         IconButton(
-          onPressed: () => ChatM.addDialog(
-              context, _titleC, widget.rO, widget.onIndexChange),
+          onPressed: () => widget.addChat(_titleC.text),
           icon: const Icon(Icons.add),
         ),
         // TODO: make the sync work widget.rO.sO.isSyncing.v ? const CircularProgressIndicator() :

@@ -114,19 +114,16 @@ class ChatM {
     }
   }
 
-  static Future loadChatNamesAndChat(RailObj rO, ChatObj cO) async {
-    await loadChatNames(rO);
-    if (rO.chatNames.isEmpty) {
-      await loadMessages(rO.chatNames[0], cO);
-    }
-  }
-
-  static Future loadChatNames(RailObj rO) async {
-    await syncFun(rO.sO, () async {
+  static Future loadChatNames(List<String> chatNames, SyncObj sO,
+      ValueChanged<String> onChatChange) async {
+    await syncFun(sO, () async {
       try {
         final snap = await FirestoreM.loadChatNames();
-        rO.chatNames.clear();
-        rO.chatNames.addAll((snap[chatNamesS] as List<dynamic>).cast<String>());
+        chatNames.clear();
+        chatNames.addAll((snap[chatNamesS] as List<dynamic>).cast<String>());
+        if (chatNames.isNotEmpty) {
+          onChatChange(chatNames[0]);
+        }
       } catch (e) {
         print(e);
       }
@@ -151,18 +148,17 @@ class ChatM {
   static Future sendMessage(
       TextEditingController textC, String chatName, ChatObj cO) async {
     if (textC.text.trim().isEmpty) return;
-    await syncFun(cO.sO, () async {
-      try {
-        final text = textC.text.trim();
-        await FirestoreM.sendMessage(Message(text: text), chatName);
-        cO.messages.add(Message(text: text));
-        // print(JarvisM.isSentenceQuestion(textC.text));
-        textC.clear();
-        await JarvisM.processSentence(text, textC);
-      } catch (e) {
-        print(e);
-      }
-    });
+    try {
+      final text = textC.text.trim();
+      await FirestoreM.sendMessage(Message(text: text), chatName);
+      cO.messages.add(Message(text: text));
+      // print(JarvisM.isSentenceQuestion(textC.text));
+      textC.clear();
+      cO.sO.setState(() {});
+      await JarvisM.processSentence(text, textC);
+    } catch (e) {
+      print(e);
+    }
   }
 
   static void handleKeyPress(

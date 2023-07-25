@@ -2,79 +2,61 @@ import 'package:flutter/material.dart';
 import '/utils.dart';
 import '/methdos/chat/chat_methods.dart';
 
-class NavBar1 extends StatefulWidget {
-  final ValueChanged<String> onChatChange;
+class NavBar1 extends StatelessWidget {
+  final RailObj rO;
+  final ChatObj cO;
+  final Function(int) onIndexChange;
+  final int navIndex;
 
-  const NavBar1(this.onChatChange, {super.key});
-
-  @override
-  State<NavBar1> createState() => _NavBar1State();
-}
-
-class _NavBar1State extends State<NavBar1> {
-  final _isSyncing = BoolW(false);
-  int _navIndex = 0;
-  final List<String> _chatNames = [];
-  late final SyncObj sO;
-
-  void addChat(String chatName) {
-    print(chatName);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    sO = SyncObj(setState, _isSyncing);
-    ChatM.loadChatNames(_chatNames, sO, widget.onChatChange);
-  }
+  const NavBar1(this.rO, this.cO, this.onIndexChange, this.navIndex,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
-    return _isSyncing.v
+    return rO.sO.isSyncing.v
         ? loadingCenter()
-        : _chatNames.isEmpty
+        : rO.chatNames.isEmpty
             ? const Text('Please add at least one chat')
-            : _chatNames.length == 1
-                ? railTile(context, _chatNames, 0, 0, widget.onChatChange)
+            : rO.chatNames.length == 1
+                ? railTile(context, rO, cO, 0, navIndex, onIndexChange)
                 : NavigationRail(
                     // TODO: make it hover if the screen is smaller than x
                     groupAlignment: 0,
                     destinations: [
-                      for (int i = 0; i < _chatNames.length; i++)
+                      for (int i = 0; i < rO.chatNames.length; i++)
                         NavigationRailDestination(
-                          icon: railTile(context, _chatNames, i, _navIndex,
-                              widget.onChatChange),
-                          label: Text(_chatNames[i]),
+                          icon: railTile(
+                              context, rO, cO, i, navIndex, onIndexChange),
+                          label: Text(rO.chatNames[i]),
                         )
                     ],
-                    selectedIndex: _navIndex,
-                    onDestinationSelected: (int index) {
-                      setState(() {
-                        _navIndex = index;
-                      });
-                      widget.onChatChange(_chatNames[index]);
-                    });
+                    selectedIndex: navIndex,
+                    onDestinationSelected: (int index) => onIndexChange(index),
+                  );
   }
 }
 
 Widget railTile(
   BuildContext context,
-  List<String> chatNames,
+  RailObj rO,
+  ChatObj cO,
   int removeI,
   int selectedI,
-  ValueChanged<String> onChatChange,
+  Function(int) onIndexChange,
 ) {
   return GestureDetector(
-    // onLongPress: () => ChatM.removeDialog(
-    //   context,
-    //   removeI,
-    //   selectedI,
-    //   onIndexChange,
-    // ),
+    onLongPress: () => ChatM.removeDialog(
+      context,
+      rO,
+      cO,
+      removeI,
+      selectedI,
+      onIndexChange,
+    ),
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Text(
-        chatNames[removeI],
+        rO.chatNames[removeI],
         overflow: TextOverflow.ellipsis,
       ),
     ),

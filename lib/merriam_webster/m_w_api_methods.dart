@@ -9,7 +9,7 @@ class MWApiM {
   static Future<String> getJson(String word) async {
     try {
       final urlString = '$learnersUrl$word?key=$mWLearnerApiKey';
-      print(urlString);
+      // print(urlString);
       final url = Uri.parse(urlString);
       final response = await http.get(url);
       return response.body;

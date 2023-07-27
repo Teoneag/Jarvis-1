@@ -5,8 +5,9 @@ import '/utils.dart';
 class ChatWidget extends StatefulWidget {
   final String chatName;
   final ChatObj cO;
+  final SyncObj sO;
 
-  const ChatWidget(this.chatName, this.cO, {super.key});
+  const ChatWidget(this.chatName, this.cO, this.sO, {super.key});
 
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
@@ -15,7 +16,6 @@ class ChatWidget extends StatefulWidget {
 class _ChatWidgetState extends State<ChatWidget> {
   final _messageC = TextEditingController();
   final _focusNode = FocusNode();
-  late final SyncObj sO;
   late final IntW messageIndex;
 
   @override
@@ -30,6 +30,9 @@ class _ChatWidgetState extends State<ChatWidget> {
     _messageC.dispose();
     _focusNode.dispose();
   }
+
+  // TODO: handle new line: flutter simplest way to achive the whatsapp enter function: when pressing normal enter, send the message, when pressing it while holding shift, add /n to the text
+  // TODO: show messages cronologically
 
   @override
   Widget build(BuildContext context) {
@@ -64,13 +67,14 @@ class _ChatWidgetState extends State<ChatWidget> {
                   hintText: 'Type a message',
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    onPressed: () => ChatM.sendMessage(
-                        _messageC, widget.chatName, widget.cO),
+                    onPressed: () => ChatM.sendMessageMe(
+                        _messageC, widget.chatName, widget.cO, widget.sO),
                     icon: const Icon(Icons.send),
                   ),
                 ),
                 onSubmitted: (_) {
-                  ChatM.sendMessage(_messageC, widget.chatName, widget.cO);
+                  ChatM.sendMessageMe(
+                      _messageC, widget.chatName, widget.cO, widget.sO);
                   _focusNode.requestFocus(); // TODO: Make it autoscroll
                 }),
           ),

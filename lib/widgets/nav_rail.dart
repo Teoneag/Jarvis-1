@@ -20,7 +20,7 @@ class NavBar1 extends StatelessWidget {
             : rO.chatNames.length == 1
                 ? railTile(context, rO, cO, 0, navIndex, onIndexChange)
                 : NavigationRail(
-                    // TODO: make it hover if the screen is smaller than x
+                    // TODO: hover(small screen)/use zoom drawer/animated list
                     groupAlignment: 0,
                     destinations: [
                       for (int i = 0; i < rO.chatNames.length; i++)

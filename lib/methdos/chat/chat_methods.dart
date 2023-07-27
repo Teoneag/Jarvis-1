@@ -148,17 +148,31 @@ class ChatM {
     });
   }
 
+  static Future sendMessageMe(TextEditingController textC, String chatName,
+      ChatObj cO, SyncObj sO) async {
+    syncFun(sO, () async {
+      try {
+        final text = textC.text.trim();
+        if (text.isEmpty) return;
+        textC.clear();
+        Message message = Message(text: text);
+        await sendMessage(message, chatName, cO);
+        final response = await JarvisM.processSentence(text);
+        message = Message(text: response, isMe: false);
+        await sendMessage(message, chatName, cO);
+      } catch (e) {
+        print(e);
+      }
+    });
+  }
+
   static Future sendMessage(
-      TextEditingController textC, String chatName, ChatObj cO) async {
-    if (textC.text.trim().isEmpty) return;
+      Message message, String chatName, ChatObj cO) async {
     try {
-      final text = textC.text.trim();
-      cO.messages.add(Message(text: text));
+      cO.messages.add(message);
       cO.sO.setState(() {});
-      await FirestoreM.sendMessage(Message(text: text), chatName);
+      await FirestoreM.sendMessage(message, chatName);
       // print(JarvisM.isSentenceQuestion(textC.text));
-      textC.clear();
-      await JarvisM.processSentence(text, textC);
     } catch (e) {
       print(e);
     }

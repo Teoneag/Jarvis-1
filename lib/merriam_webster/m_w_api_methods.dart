@@ -3,19 +3,28 @@ import '/merriam_webster/m_w_api_key.dart';
 
 const baseUrl = 'https://dictionaryapi.com/api/v3/references/';
 const learners = 'learners';
-const learnersUrl = '$baseUrl$learners/json/';
+const dictionary = 'collegiate';
 
 class MWApiM {
-  static Future<String> getJson(String word) async {
+  static Future<String> learnersGetJson(String word) async {
+    return getJson(word, true);
+  }
+
+  static Future<String> dictGetJson(String word) async {
+    return getJson(word, false);
+  }
+
+  static Future<String> getJson(String word, bool isLearner) {
     try {
-      final urlString = '$learnersUrl$word?key=$mWLearnerApiKey';
+      final urlString =
+          '$baseUrl${isLearner ? learners : dictionary}/json/$word'
+          '?key=${isLearner ? mWLearnerApiKey : mWDictApiKey}';
       // print(urlString);
       final url = Uri.parse(urlString);
-      final response = await http.get(url);
-      return response.body;
+      return http.get(url).then((response) => response.body);
     } catch (e) {
       print(e);
-      return '$e';
+      return Future.value('$e');
     }
   }
 }

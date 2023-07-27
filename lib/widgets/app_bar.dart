@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:jarvis_1/utils.dart';
 import '/methdos/chat/chat_methods.dart';
 
 class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
   final RailObj rO;
   final VoidCallback onChangeRail;
   final Function(int) onIndexChange;
-  const AppBar1(this.rO, this.onChangeRail, this.onIndexChange, {super.key});
+  final BoolW isSyncing;
+
+  const AppBar1(this.rO, this.onChangeRail, this.onIndexChange, this.isSyncing,
+      {super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -37,13 +41,15 @@ class _AppBar1State extends State<AppBar1> {
               context, _titleC, widget.rO, widget.onIndexChange),
           icon: const Icon(Icons.add),
         ),
-        // TODO: make the sync work widget.rO.sO.isSyncing.v ? const CircularProgressIndicator() :
-        IconButton(
-          onPressed: () {
-            // ChatM.loadChatNames(chatNames, sO2); // TODO: make this
-          },
-          icon: const Icon(Icons.sync),
-        ),
+        // TODO: make the sync work
+        widget.isSyncing.v
+            ? const CircularProgressIndicator()
+            : IconButton(
+                onPressed: () {
+                  // ChatM.loadChatNames(chatNames, sO2); // TODO: make this
+                },
+                icon: const Icon(Icons.sync),
+              ),
         const SizedBox(width: 30), // TODO: delete this & remove debug banner
       ],
     );

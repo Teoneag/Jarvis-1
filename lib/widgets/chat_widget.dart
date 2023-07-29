@@ -16,12 +16,11 @@ class ChatWidget extends StatefulWidget {
 class _ChatWidgetState extends State<ChatWidget> {
   final _messageC = TextEditingController();
   final _focusNode = FocusNode();
-  late final IntW messageIndex;
+  final messageIndex = IntW(-1);
 
   @override
   void initState() {
     super.initState();
-    messageIndex = IntW(widget.cO.messages.length - 1);
   }
 
   @override
@@ -40,10 +39,12 @@ class _ChatWidgetState extends State<ChatWidget> {
       children: [
         Expanded(
           child: ListView.builder(
+            reverse: true,
             itemCount: widget.cO.messages.length,
             itemBuilder: (context, index) {
               final message = widget.cO.messages[index];
               return ListTile(
+                contentPadding: message.isAux ? const EdgeInsets.all(50) : null,
                 title: Align(
                     alignment: message.isMe
                         ? Alignment.centerRight

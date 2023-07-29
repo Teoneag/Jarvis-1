@@ -51,6 +51,22 @@ class FirestoreM {
     }
   }
 
+  static Future<QuerySnapshot> loadMessagesByTimestamp(chatName) async {
+    try {
+      return await _firestore
+          .collection(chatsS)
+          .doc(chatName)
+          .collection(messagesS)
+          .orderBy(dateS, descending: true)
+          .get();
+    } catch (e) {
+      print(e);
+      throw Error();
+    }
+  }
+
+  // TODO: when there are to many messages to be loaded, load them in batches
+
   static Future<String> removeChat(String chatName) async {
     try {
       await _firestore.collection(generalS).doc(chatsS).update({

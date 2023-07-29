@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:jarvis_1/methdos/chat/chat_methods.dart';
+import 'package:jarvis_1/models/message_model.dart';
 import 'package:jarvis_1/utils.dart';
 import '/merriam_webster/m_w_api_methods.dart';
 
@@ -16,9 +18,13 @@ class JarvisM {
   //   }
   // }
 
-  static Future<String> processSentence(String sentence) async {
+  static Future<void> processSentence(
+      String sentence, String chatName, ChatObj cO) async {
     try {
+      // TODO: change to stream
       // TODO: detect what part of speach is each word
+      // TODO: implement auxiliary questions?
+      // TODO: implement bing api
       final lowercaseText = sentence.trim().toLowerCase();
       final words = lowercaseText.split(' ');
       List<String> partsOfSpeach = [];
@@ -51,9 +57,18 @@ class JarvisM {
       String response = '';
       for (int i = 0; i < words.length; i++) {
         response += '${words[i]}: ${partsOfSpeach[i]}\n';
+        if (partsOfSpeach[i] == oovWord[0]) {
+          final message = Message(
+            text: 'What part of speach is ${words[i]}?',
+            isAux: true,
+            isMe: false,
+          );
+          await ChatM.sendMessage(message, chatName, cO);
+        }
       }
       print(response);
-      return response;
+      await ChatM.sendMessage(
+          Message(text: response, isMe: false), chatName, cO);
 
       // TODO: split in parts execute every part
       // if (isSentenceQuestion(sentence)) {
@@ -68,7 +83,6 @@ class JarvisM {
       // TODO: at the end say smth like ok
     } catch (e) {
       print(e);
-      return '$e';
     }
   }
 }

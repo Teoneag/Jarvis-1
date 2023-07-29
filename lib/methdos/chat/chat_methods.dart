@@ -136,7 +136,7 @@ class ChatM {
   static Future loadMessages(String chatName, ChatObj cO) async {
     await syncFun(cO.sO, () async {
       try {
-        final snap = await FirestoreM.loadMessages(chatName);
+        final snap = await FirestoreM.loadMessagesByTimestamp(chatName);
         cO.messages.clear();
         cO.messages.addAll(snap.docs
             .map((doc) =>
@@ -157,9 +157,7 @@ class ChatM {
         textC.clear();
         Message message = Message(text: text);
         await sendMessage(message, chatName, cO);
-        final response = await JarvisM.processSentence(text);
-        message = Message(text: response, isMe: false);
-        await sendMessage(message, chatName, cO);
+        await JarvisM.processSentence(text, chatName, cO);
       } catch (e) {
         print(e);
       }
@@ -169,7 +167,7 @@ class ChatM {
   static Future sendMessage(
       Message message, String chatName, ChatObj cO) async {
     try {
-      cO.messages.add(message);
+      cO.messages.insert(0, message);
       cO.sO.setState(() {});
       await FirestoreM.sendMessage(message, chatName);
       // print(JarvisM.isSentenceQuestion(textC.text));
@@ -186,14 +184,14 @@ class ChatM {
   ) {
     if (event is RawKeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.arrowUp) {
-      i.v--;
-      if (i.v < 0) i.v = 0;
+      i.v++;
+      if (i.v >= messages.length) i.v = messages.length - 1;
       c.text = messages[i.v].text;
     } else if (event is RawKeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.arrowDown) {
-      i.v++;
-      if (i.v > messages.length) i.v = messages.length;
-      if (i.v == messages.length) {
+      i.v--;
+      if (i.v < -1) i.v = -1;
+      if (i.v == -1) {
         c.clear();
       } else {
         c.text = messages[i.v].text;

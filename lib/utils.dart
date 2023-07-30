@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 const successS = 'success';
 
-const unknownS = 'unknown';
-const oovWord = 'oovWord';
-
 Widget loadingCenter() {
   return const Center(
     child: CircularProgressIndicator(),

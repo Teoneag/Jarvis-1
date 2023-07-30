@@ -6,24 +6,20 @@ Personal assistant (like Jarvis form Iron Man)
 # Plan
 ✅ 1. Make chat like interface (then add sound -> text, text -> sound, then also img...)
 2. Make it able to detect from props parts of data in ("learning") and data out ("giving responses")
-3. Handle data in
-4. Handle data out
+3. Navigate the web + laptop
 Later
 - add more languages
 - archive chats, see archived chats
 
 # ToDo
-- order the messages cronologically
 - make MWApi detect verbs 
 0. make this work
-I am teo.
-Who am I?
+I am teo. / My name is Teon
+Who am I? / what is my name
 when somebody greets u, u should greet back
 "hello" is a greeting
 hello
 
-My name is Teon
-what is my name
 
 1. Detect questions
 - ? at the end

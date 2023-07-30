@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '/models/word_model.dart';
 import '/models/message_model.dart';
 import '/utils.dart';
 
@@ -6,9 +7,38 @@ const chatsS = 'chats';
 const messagesS = 'messages';
 const generalS = 'general';
 const chatNamesS = 'chatNames';
+const wordsS = 'words';
 
 class FirestoreM {
   static final _firestore = FirebaseFirestore.instance;
+
+  static Future<String> setPartOfSpeach(
+      String word, String partOfSpeach) async {
+    try {
+      await _firestore.collection(wordsS).doc(word).update({
+        partOfSpeachS: partOfSpeach,
+      });
+      return successS;
+    } catch (e) {
+      print(e);
+      return '$e';
+    }
+  }
+
+  static Future<Word> searchOrAddWord(String text) async {
+    try {
+      final snap = await _firestore.collection(wordsS).doc(text).get();
+      if (snap.exists) {
+        return Word.fromJson(snap.data()!);
+      }
+      final word = Word(text);
+      await _firestore.collection(wordsS).doc(text).set(word.toJson());
+      return word;
+    } catch (e) {
+      print(e);
+      return Word('$e');
+    }
+  }
 
   static Future<String> addChat(String chatName) async {
     try {

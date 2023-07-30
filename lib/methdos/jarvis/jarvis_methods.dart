@@ -1,23 +1,13 @@
 import 'dart:convert';
-import 'package:jarvis_1/methdos/chat/chat_methods.dart';
-import 'package:jarvis_1/models/message_model.dart';
-import 'package:jarvis_1/utils.dart';
+
+import 'package:jarvis_1/firestore/firestore_methods.dart';
+
+import '/models/word_model.dart';
+import '/methdos/chat/chat_methods.dart';
+import '/models/message_model.dart';
 import '/merriam_webster/m_w_api_methods.dart';
 
 class JarvisM {
-  // static bool isSentenceQuestion(String sentence) {
-  //   try {
-  //     if (sentence.trim().endsWith('?')) return true;
-  //     final lowercaseText = sentence.trim().toLowerCase();
-  //     final firstWord = lowercaseText.split(' ')[0];
-
-  //     return auxVerbs.contains(firstWord) || whWords.contains(firstWord);
-  //   } catch (e) {
-  //     print(e);
-  //     return false;
-  //   }
-  // }
-
   static Future<void> processSentence(
       String sentence, String chatName, ChatObj cO) async {
     try {
@@ -28,43 +18,52 @@ class JarvisM {
       final lowercaseText = sentence.trim().toLowerCase();
       final words = lowercaseText.split(' ');
       List<String> partsOfSpeach = [];
-      for (var word in words) {
+      // TODO: assing numbers to each part of speach so you don't have to compare strings
+      for (var text in words) {
         // print(word);
-        final response = await MWApiM.dictGetJson(word);
+        final word = await FirestoreM.searchOrAddWord(text);
+        if (word.partOfSpeach != unknownS) {
+          partsOfSpeach.add(word.partOfSpeach);
+          continue;
+        }
+
+        final response = await MWApiM.dictGetJson(text);
         final data = json.decode(response);
         if (data is! List) {
-          partsOfSpeach.add(unknownS[0]);
+          partsOfSpeach.add(unknownS);
           // print('not a list');
           continue;
         }
         if (data.isEmpty) {
-          partsOfSpeach.add(unknownS[0]);
+          partsOfSpeach.add(unknownS);
           // print('empty list');
           continue;
         }
         if (data[0] is! Map) {
-          partsOfSpeach.add(unknownS[0]);
+          partsOfSpeach.add(unknownS);
           // print('no maps in list');
           continue;
         }
+        word.partOfSpeach = oovWord;
         if (data[0]['fl'] == null) {
-          partsOfSpeach.add(oovWord[0]);
+          partsOfSpeach.add(oovWord);
           // print('no fl');
           continue;
         }
-        partsOfSpeach.add(data[0]['fl'][0]);
+        partsOfSpeach.add(data[0]['fl']);
+        await FirestoreM.setPartOfSpeach(text, data[0]['fl']);
       }
       String response = '';
       for (int i = 0; i < words.length; i++) {
         response += '${words[i]}: ${partsOfSpeach[i]}\n';
-        if (partsOfSpeach[i] == oovWord[0]) {
-          final message = Message(
-            text: 'What part of speach is ${words[i]}?',
-            isAux: true,
-            isMe: false,
-          );
-          await ChatM.sendMessage(message, chatName, cO);
-        }
+        //   if (partsOfSpeach[i] == oovWord) {
+        //     final message = Message(
+        //       text: 'What part of speach is ${words[i]}?',
+        //       isAux: true,
+        //       isMe: false,
+        //     );
+        //     await ChatM.sendMessage(message, chatName, cO);
+        //   }
       }
       print(response);
       await ChatM.sendMessage(

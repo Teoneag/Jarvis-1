@@ -1,6 +1,8 @@
 const textS = 'text';
 const partOfSpeachS = 'partOfSpeach';
 
+// TODO save source
+
 class Word {
   String text;
   String partOfSpeach;

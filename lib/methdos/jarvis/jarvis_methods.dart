@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:jarvis_1/firestore/firestore_methods.dart';
-
+import '/firestore/firestore_methods.dart';
 import '/models/word_model.dart';
 import '/methdos/chat/chat_methods.dart';
 import '/models/message_model.dart';
@@ -11,10 +11,26 @@ class JarvisM {
   static Future<void> processSentence(
       String sentence, String chatName, ChatObj cO) async {
     try {
-      // TODO: change to stream
-      // TODO: detect what part of speach is each word
-      // TODO: implement auxiliary questions?
-      // TODO: implement bing api
+      /*
+      i am teo
+        What is am?
+        v
+        
+        What is teo?
+        name
+      Ok, user name set to "teo"
+      
+      i have a question
+      processing
+        i get a question
+        i answer
+      i get an answer
+
+      */
+      // TODO log all the things are done before showing an answer
+      // TODO detect what part of speach is each word
+      // TODO implement auxiliary questions?
+      // TODO implement bing api
       final lowercaseText = sentence.trim().toLowerCase();
       final words = lowercaseText.split(' ');
       List<String> partsOfSpeach = [];
@@ -83,6 +99,11 @@ class JarvisM {
     } catch (e) {
       print(e);
     }
+  }
+
+  static Future<String> askQuestion(String question) async {
+    // final completer = Completer<String>();
+    return '';
   }
 }
 

@@ -1,37 +1,34 @@
 import 'package:flutter/material.dart';
-import '../methdos/chat/chat_methods.dart';
+import '/methdos/chat/chat_methods.dart';
 import '/utils.dart';
 
 class ChatWidget extends StatefulWidget {
   final String chatName;
   final ChatObj cO;
   final SyncObj sO;
+  final BoolW isRespondWaited;
 
-  const ChatWidget(this.chatName, this.cO, this.sO, {super.key});
+  const ChatWidget(this.chatName, this.cO, this.sO, this.isRespondWaited,
+      {super.key});
 
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
 }
 
 class _ChatWidgetState extends State<ChatWidget> {
-  final _messageC = TextEditingController();
-  final _focusNode = FocusNode();
+  final messageC = TextEditingController();
+  final focusNode = FocusNode();
   final messageIndex = IntW(-1);
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
     super.dispose();
-    _messageC.dispose();
-    _focusNode.dispose();
+    messageC.dispose();
+    focusNode.dispose();
   }
 
   // TODO: handle new line: flutter simplest way to achive the whatsapp enter function: when pressing normal enter, send the message, when pressing it while holding shift, add /n to the text
-  // TODO: show messages cronologically
+  // TODO: show date of messages
 
   @override
   Widget build(BuildContext context) {
@@ -59,24 +56,24 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: RawKeyboardListener(
             focusNode: FocusNode(),
             onKey: (event) => ChatM.handleKeyPress(
-                event, messageIndex, _messageC, widget.cO.messages),
+                event, messageIndex, messageC, widget.cO.messages),
             child: TextField(
                 autofocus: true,
-                focusNode: _focusNode,
-                controller: _messageC,
+                focusNode: focusNode,
+                controller: messageC,
                 decoration: InputDecoration(
                   hintText: 'Type a message',
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     onPressed: () => ChatM.sendMessageMe(
-                        _messageC, widget.chatName, widget.cO, widget.sO),
+                        messageC, widget.chatName, widget.cO, widget.sO),
                     icon: const Icon(Icons.send),
                   ),
                 ),
                 onSubmitted: (_) {
                   ChatM.sendMessageMe(
-                      _messageC, widget.chatName, widget.cO, widget.sO);
-                  _focusNode.requestFocus(); // TODO: Make it autoscroll
+                      messageC, widget.chatName, widget.cO, widget.sO);
+                  focusNode.requestFocus(); // TODO: Make it autoscroll
                 }),
           ),
         ),

@@ -128,7 +128,7 @@ class ChatM {
         rO.chatNames.clear();
         rO.chatNames.addAll((snap[chatNamesS] as List<dynamic>).cast<String>());
       } catch (e) {
-        print(e);
+        print('This is loadChatNames: $e');
       }
     });
   }
@@ -142,8 +142,11 @@ class ChatM {
             .map((doc) =>
                 Message.fromSnap(doc.id, doc.data() as Map<String, dynamic>))
             .toList());
+
+        final snap2 = await FirestoreM.loadChat(chatName);
+        cO.isRespondWaited.v = snap2[isRespondWaitedS];
       } catch (e) {
-        print(e);
+        print('This is loadMessages: $e');
       }
     });
   }
@@ -220,6 +223,7 @@ class RailObj {
 class ChatObj {
   final List<Message> messages;
   final SyncObj sO;
-
-  ChatObj(this.messages, this.sO);
+  final BoolW isRespondWaited;
+  ChatObj(this.messages, this.sO, {BoolW? isRespondWaited})
+      : isRespondWaited = isRespondWaited ?? BoolW(false);
 }

@@ -14,13 +14,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _isAppSyncing = BoolW(false);
-  final _isRailSyncing = BoolW(false);
-  final _isChatSyncing = BoolW(false);
-  int _navIndex = 0;
-  final _isRailHidden = BoolW(false);
-  final List<String> _chatNames = [];
-  final List<Message> _messages = [];
+  final isAppSyncing = BoolW(false);
+  final isRailSyncing = BoolW(false);
+  final isChatSyncing = BoolW(false);
+  int navIndex = 0;
+  final isRailHidden = BoolW(false);
+  final List<String> chatNames = [];
+  final List<Message> messages = [];
+  final isRespondWaited = BoolW(false);
+
   late final RailObj rO;
   late final ChatObj cO;
   late final SyncObj sO;
@@ -28,43 +30,44 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    rO = RailObj(_chatNames, SyncObj(setState, _isRailSyncing));
-    cO = ChatObj(_messages, SyncObj(setState, _isChatSyncing));
-    sO = SyncObj(setState, _isAppSyncing);
+    rO = RailObj(chatNames, SyncObj(setState, isRailSyncing));
+    cO = ChatObj(messages, SyncObj(setState, isChatSyncing),
+        isRespondWaited: isRespondWaited);
+    sO = SyncObj(setState, isAppSyncing);
     ChatM.loadChatNamesAndChat(rO, cO);
   }
 
-  void _onIndexChange(int index) {
+  void onIndexChange(int index) {
     setState(() {
-      _navIndex = index;
+      navIndex = index;
     });
-    ChatM.loadMessages(_chatNames[_navIndex], cO);
+    ChatM.loadMessages(chatNames[navIndex], cO);
   }
 
-  void _onRailChange() {
+  void onRailChange() {
     setState(() {
-      _isRailHidden.v = !_isRailHidden.v;
+      isRailHidden.v = !isRailHidden.v;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar1(rO, _onRailChange, _onIndexChange, sO.isSyncing),
+      appBar: AppBar1(rO, onRailChange, onIndexChange, sO.isSyncing),
       body: Row(
         children: [
-          !_isRailHidden.v
+          !isRailHidden.v
               ? Row(children: [
-                  NavBar1(rO, cO, _onIndexChange, _navIndex),
+                  NavBar1(rO, cO, onIndexChange, navIndex),
                   const VerticalDivider(),
                 ])
               : Container(),
           Expanded(
-            child: _isChatSyncing.v
+            child: isChatSyncing.v
                 ? loadingCenter()
-                : _chatNames.isEmpty
+                : chatNames.isEmpty
                     ? const Text('Please select a chat')
-                    : ChatWidget(_chatNames[_navIndex], cO, sO),
+                    : ChatWidget(chatNames[navIndex], cO, sO, isRespondWaited),
           ),
         ],
       ),

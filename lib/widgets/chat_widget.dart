@@ -3,13 +3,8 @@ import '/methdos/chat/chat_methods.dart';
 import '/utils.dart';
 
 class ChatWidget extends StatefulWidget {
-  final String chatName;
-  final ChatObj cO;
-  final SyncObj sO;
-  final BoolW isRespondWaited;
-
-  const ChatWidget(this.chatName, this.cO, this.sO, this.isRespondWaited,
-      {super.key});
+  final HSV hSV;
+  const ChatWidget(this.hSV, {super.key});
 
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
@@ -37,11 +32,16 @@ class _ChatWidgetState extends State<ChatWidget> {
         Expanded(
           child: ListView.builder(
             reverse: true,
-            itemCount: widget.cO.messages.length,
+            itemCount: widget.hSV.messages.length,
             itemBuilder: (context, index) {
-              final message = widget.cO.messages[index];
+              final message = widget.hSV.messages[index];
               return ListTile(
-                contentPadding: message.isAux ? const EdgeInsets.all(50) : null,
+                shape: const RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.black, width: 1),
+                ),
+                contentPadding: message.isAux
+                    ? const EdgeInsets.symmetric(horizontal: 50)
+                    : null,
                 title: Align(
                     alignment: message.isMe
                         ? Alignment.centerRight
@@ -56,7 +56,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: RawKeyboardListener(
             focusNode: FocusNode(),
             onKey: (event) => ChatM.handleKeyPress(
-                event, messageIndex, messageC, widget.cO.messages),
+                event, messageIndex, messageC, widget.hSV.messages),
             child: TextField(
                 autofocus: true,
                 focusNode: focusNode,
@@ -65,14 +65,12 @@ class _ChatWidgetState extends State<ChatWidget> {
                   hintText: 'Type a message',
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    onPressed: () => ChatM.sendMessageMe(
-                        messageC, widget.chatName, widget.cO, widget.sO),
+                    onPressed: () => ChatM.sendMessageMe(widget.hSV, messageC),
                     icon: const Icon(Icons.send),
                   ),
                 ),
                 onSubmitted: (_) {
-                  ChatM.sendMessageMe(
-                      messageC, widget.chatName, widget.cO, widget.sO);
+                  ChatM.sendMessageMe(widget.hSV, messageC);
                   focusNode.requestFocus(); // TODO: Make it autoscroll
                 }),
           ),

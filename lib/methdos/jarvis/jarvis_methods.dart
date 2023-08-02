@@ -7,11 +7,7 @@ import '/methdos/chat/chat_methods.dart';
 import '/models/message_model.dart';
 import '/merriam_webster/m_w_api_methods.dart';
 
-class JarvisM {
-  static Future<void> processSentence(
-      String sentence, String chatName, ChatObj cO) async {
-    try {
-      /*
+/*
       i am teo
         What is am?
         v
@@ -25,12 +21,25 @@ class JarvisM {
         i get a question
         i answer
       i get an answer
-
       */
+
+class JarvisM {
+  static Future<void> processSentence(String sentence, HSV hSV) async {
+    try {
       // TODO log all the things are done before showing an answer
       // TODO detect what part of speach is each word
       // TODO implement auxiliary questions?
       // TODO implement bing api
+      if (hSV.pendingSentence.v != null) {
+        print('response is waited');
+        switch (sentence) {
+          case 'v':
+            await FirestoreM.setPartOfSpeach(hSV.messages[1].text, verbS);
+            // TODO send message like this is saved as this
+            break;
+        }
+        sentence = hSV.pendingSentence.v!;
+      }
       final lowercaseText = sentence.trim().toLowerCase();
       final words = lowercaseText.split(' ');
       List<String> partsOfSpeach = [];
@@ -72,18 +81,26 @@ class JarvisM {
       String response = '';
       for (int i = 0; i < words.length; i++) {
         response += '${words[i]}: ${partsOfSpeach[i]}\n';
-        //   if (partsOfSpeach[i] == oovWord) {
-        //     final message = Message(
-        //       text: 'What part of speach is ${words[i]}?',
-        //       isAux: true,
-        //       isMe: false,
-        //     );
-        //     await ChatM.sendMessage(message, chatName, cO);
-        //   }
+        if (partsOfSpeach[i] == oovWord) {
+          hSV.pendingSentence.v = sentence;
+          final message = Message(
+            text: 'What part of speach is the follwoing word?',
+            isAux: true,
+            isMe: false,
+          );
+          await ChatM.sendMessage(message, hSV);
+          final message2 = Message(
+            text: words[i],
+            isAux: true,
+            isMe: false,
+          );
+          await ChatM.sendMessage(message2, hSV);
+          return;
+        }
       }
+      // TODO set pendingSentence to null if everything goes smoothly
       print(response);
-      await ChatM.sendMessage(
-          Message(text: response, isMe: false), chatName, cO);
+      await ChatM.sendMessage(Message(text: response, isMe: false), hSV);
 
       // TODO: split in parts execute every part
       // if (isSentenceQuestion(sentence)) {

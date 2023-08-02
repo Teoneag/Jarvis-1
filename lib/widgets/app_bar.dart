@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:jarvis_1/utils.dart';
 import '/methdos/chat/chat_methods.dart';
 
 class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
-  final RailObj rO;
-  final VoidCallback onChangeRail;
-  final Function(int) onIndexChange;
-  final BoolW isSyncing;
+  final HSV hSV;
 
-  const AppBar1(this.rO, this.onChangeRail, this.onIndexChange, this.isSyncing,
-      {super.key});
+  const AppBar1(this.hSV, {super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -31,18 +26,17 @@ class _AppBar1State extends State<AppBar1> {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       leading: IconButton(
-        onPressed: widget.onChangeRail,
+        onPressed: widget.hSV.onRailChange,
         icon: const Icon(Icons.menu),
       ),
       title: const Text('Jarvis'), // TODO: change to conv name or date
       actions: [
         IconButton(
-          onPressed: () => ChatM.addDialog(
-              context, _titleC, widget.rO, widget.onIndexChange),
+          onPressed: () => ChatM.addDialog(context, _titleC, widget.hSV),
           icon: const Icon(Icons.add),
         ),
         // TODO: make the sync work
-        widget.isSyncing.v
+        widget.hSV.isAppSyncing.v
             ? const CircularProgressIndicator()
             : IconButton(
                 onPressed: () {

@@ -8,7 +8,7 @@ const messagesS = 'messages';
 const generalS = 'general';
 const chatNamesS = 'chatNames';
 const wordsS = 'words';
-const isRespondWaitedS = 'isRespondWaited';
+const pendingSentenceS = 'pendingSentence';
 
 class FirestoreM {
   static final firestore = FirebaseFirestore.instance;
@@ -47,7 +47,7 @@ class FirestoreM {
         chatNamesS: FieldValue.arrayUnion([chatName])
       });
       await firestore.collection(chatsS).doc(chatName).set({
-        isRespondWaitedS: false,
+        pendingSentenceS: false,
       });
       return successS;
     } catch (e) {

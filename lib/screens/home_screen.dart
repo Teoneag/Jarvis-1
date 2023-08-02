@@ -17,31 +17,43 @@ class _HomeScreenState extends State<HomeScreen> {
   final isAppSyncing = BoolW(false);
   final isRailSyncing = BoolW(false);
   final isChatSyncing = BoolW(false);
-  int navIndex = 0;
   final isRailHidden = BoolW(false);
+  final pendingSentence = StringNW();
+  final navIndex = IntW(0);
   final List<String> chatNames = [];
   final List<Message> messages = [];
-  final isRespondWaited = BoolW(false);
 
-  late final RailObj rO;
-  late final ChatObj cO;
-  late final SyncObj sO;
+  // late final SyncObj sO;
+  late final HSV hSV;
 
   @override
   void initState() {
     super.initState();
-    rO = RailObj(chatNames, SyncObj(setState, isRailSyncing));
-    cO = ChatObj(messages, SyncObj(setState, isChatSyncing),
-        isRespondWaited: isRespondWaited);
-    sO = SyncObj(setState, isAppSyncing);
-    ChatM.loadChatNamesAndChat(rO, cO);
+    // rO = RailObj(chatNames, SyncObj(setState, isRailSyncing));
+    // cO = ChatObj(
+    //     '', messages, SyncObj(setState, isChatSyncing), isRespondWaited);
+    // sO = SyncObj(setState, isAppSyncing);
+    hSV = HSV(
+      isAppSyncing,
+      isRailSyncing,
+      isChatSyncing,
+      isRailHidden,
+      pendingSentence,
+      navIndex,
+      chatNames,
+      messages,
+      onIndexChange,
+      onRailChange,
+      setState,
+    );
+    ChatM.loadChatNamesAndChat(hSV);
   }
 
   void onIndexChange(int index) {
     setState(() {
-      navIndex = index;
+      navIndex.v = index;
     });
-    ChatM.loadMessages(chatNames[navIndex], cO);
+    ChatM.loadMessages(hSV);
   }
 
   void onRailChange() {
@@ -53,12 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar1(rO, onRailChange, onIndexChange, sO.isSyncing),
+      appBar: AppBar1(hSV),
       body: Row(
         children: [
           !isRailHidden.v
               ? Row(children: [
-                  NavBar1(rO, cO, onIndexChange, navIndex),
+                  NavBar1(hSV),
                   const VerticalDivider(),
                 ])
               : Container(),
@@ -67,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? loadingCenter()
                 : chatNames.isEmpty
                     ? const Text('Please select a chat')
-                    : ChatWidget(chatNames[navIndex], cO, sO, isRespondWaited),
+                    : ChatWidget(hSV),
           ),
         ],
       ),

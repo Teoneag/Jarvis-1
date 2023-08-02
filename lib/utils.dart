@@ -26,6 +26,12 @@ class StringW {
   StringW(this.v);
 }
 
+class StringNW {
+  String? v;
+
+  StringNW({this.v});
+}
+
 class SyncObj {
   final StateSetter setState;
   final BoolW isSyncing;

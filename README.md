@@ -10,6 +10,7 @@ Personal assistant (like Jarvis form Iron Man)
 Later
 - add more languages
 - archive chats, see archived chats
+- implement bing api
 
 # ToDo
 - make MWApi detect verbs 

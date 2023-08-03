@@ -18,8 +18,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final isRailSyncing = BoolW(false);
   final isChatSyncing = BoolW(false);
   final isRailHidden = BoolW(false);
-  final pendingSentence = StringNW();
   final navIndex = IntW(0);
+  final List<DateTime> pendngSentences = [];
   final List<String> chatNames = [];
   final List<Message> messages = [];
 
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isRailSyncing,
       isChatSyncing,
       isRailHidden,
-      pendingSentence,
+      pendngSentences,
       navIndex,
       chatNames,
       messages,

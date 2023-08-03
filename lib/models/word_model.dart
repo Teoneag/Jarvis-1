@@ -26,6 +26,6 @@ class Word {
 const verbS = 'verb';
 const nounS = 'noun';
 const unknownS = 'unknown';
-const oovWord = 'oovWord';
+const oovWordS = 'oovWord';
 // const adjectiveS = 'adj';
 // const adverbS = 'adv';

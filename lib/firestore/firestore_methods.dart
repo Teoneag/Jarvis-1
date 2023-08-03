@@ -26,6 +26,19 @@ class FirestoreM {
     }
   }
 
+  static Future<Word?> searchWord(String text) async {
+    try {
+      final snap = await firestore.collection(wordsS).doc(text).get();
+      if (snap.exists) {
+        return Word.fromJson(snap.data()!);
+      }
+      return null;
+    } catch (e) {
+      print('this is searchWord: $e');
+      return null;
+    }
+  }
+
   static Future<Word> searchOrAddWord(String text) async {
     try {
       final snap = await firestore.collection(wordsS).doc(text).get();
@@ -47,7 +60,7 @@ class FirestoreM {
         chatNamesS: FieldValue.arrayUnion([chatName])
       });
       await firestore.collection(chatsS).doc(chatName).set({
-        pendingSentenceS: false,
+        pendingSentenceS: [],
       });
       return successS;
     } catch (e) {

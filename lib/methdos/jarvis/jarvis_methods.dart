@@ -26,19 +26,32 @@ import '/merriam_webster/m_w_api_methods.dart';
 class JarvisM {
   static Future<void> processSentence(String sentence, HSV hSV) async {
     try {
+      // TODO add delete funcitonality
       // TODO log all the things are done before showing an answer
       // TODO detect what part of speach is each word
       // TODO implement auxiliary questions?
-      // TODO implement bing api
-      if (hSV.pendingSentence.v != null) {
-        print('response is waited');
-        switch (sentence) {
-          case 'v':
-            await FirestoreM.setPartOfSpeach(hSV.messages[1].text, verbS);
-            // TODO send message like this is saved as this
-            break;
-        }
-        sentence = hSV.pendingSentence.v!;
+      // TODO implement abreviation
+      // TODO add multiple pendng sentences as timestamps
+      if (hSV.pendingSentences.isNotEmpty) {
+        // print('response is waited');
+        // final word = await FirestoreM.searchWord(sentence);
+        // if (word == null) {
+        //   // TODO ask if this is a part of speach
+        // } else {
+        //   if (word.partOfSpeach == partOfSpeachS) {
+        //     // TODO set the part of speach of the pendinsentence to this
+        //   } else {
+        //     // TODO say that you need the part of speach of ... and you can answer with ...
+        //   }
+        // }
+        // // TODO check if it's a part of speach
+        // // switch (sentence) {
+        // //   case 'v':
+        // //     await FirestoreM.setPartOfSpeach(hSV.messages[1].text, verbS);
+        // //     // TODO send message like this is saved as this
+        // //     break;
+        // // }
+        // sentence = hSV.pendingSentences.v!;
       }
       final lowercaseText = sentence.trim().toLowerCase();
       final words = lowercaseText.split(' ');
@@ -69,9 +82,9 @@ class JarvisM {
           // print('no maps in list');
           continue;
         }
-        word.partOfSpeach = oovWord;
+        word.partOfSpeach = oovWordS;
         if (data[0]['fl'] == null) {
-          partsOfSpeach.add(oovWord);
+          partsOfSpeach.add(oovWordS);
           // print('no fl');
           continue;
         }
@@ -81,8 +94,8 @@ class JarvisM {
       String response = '';
       for (int i = 0; i < words.length; i++) {
         response += '${words[i]}: ${partsOfSpeach[i]}\n';
-        if (partsOfSpeach[i] == oovWord) {
-          hSV.pendingSentence.v = sentence;
+        if (partsOfSpeach[i] == oovWordS) {
+          hSV.pendingSentences.add(hSV.messages[0].date);
           final message = Message(
             text: 'What part of speach is the follwoing word?',
             isAux: true,

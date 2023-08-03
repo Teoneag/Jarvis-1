@@ -134,7 +134,8 @@ class ChatM {
             .toList());
 
         final snap2 = await FirestoreM.loadChat(hSV.chatName);
-        hSV.pendingSentence.v = snap2[pendingSentenceS];
+        hSV.pendingSentences.clear();
+        hSV.pendingSentences.addAll(snap2[pendingSentenceS]);
       } catch (e) {
         print('This is loadMessages: $e');
       }
@@ -201,27 +202,12 @@ Future<void> syncFun(SyncObj sO, Function callback) async {
   });
 }
 
-// class RailObj {
-//   final List<String> chatNames;
-//   final SyncObj sO;
-
-//   RailObj(this.chatNames, this.sO);
-// }
-
-// class ChatObj {
-//   String chatName;
-//   final List<Message> messages;
-//   final SyncObj sO;
-//   final BoolW isRespondWaited;
-//   ChatObj(this.chatName, this.messages, this.sO, this.isRespondWaited);
-// }
-
 class HSV {
   final BoolW isAppSyncing;
   final BoolW isRailSyncing;
   final BoolW isChatSyncing;
   final BoolW isRailHidden;
-  final StringNW pendingSentence;
+  final List<DateTime> pendingSentences;
   final IntW navIndex;
   final List<String> chatNames;
   final List<Message> messages;
@@ -234,7 +220,7 @@ class HSV {
     this.isRailSyncing,
     this.isChatSyncing,
     this.isRailHidden,
-    this.pendingSentence,
+    this.pendingSentences,
     this.navIndex,
     this.chatNames,
     this.messages,

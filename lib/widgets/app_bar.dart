@@ -44,6 +44,11 @@ class _AppBar1State extends State<AppBar1> {
                 },
                 icon: const Icon(Icons.sync),
               ),
+        IconButton(
+          onPressed: () => ChatM.resetJarvis(context, widget.hSV),
+          icon: const Icon(Icons.dangerous),
+          color: Colors.red,
+        ),
         const SizedBox(width: 30), // TODO: delete this & remove debug banner
       ],
     );

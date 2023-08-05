@@ -23,44 +23,89 @@ import '/merriam_webster/m_w_api_methods.dart';
       i get an answer
       */
 
+// TODO add delete info funcitonality
+// TODO log all the things are done before showing an answer
+// TODO detect what part of speach is each word
+// TODO solve pb when changing chats while processing
+// TODO implement abreviation
+
 class JarvisM {
-  static Future<void> processSentence(String sentence, HSV hSV) async {
+  static Future<void> _processPendingSentenceFromJarvis(
+      String pendingSentence, String sentence, HSV hSV) async {
     try {
-      // TODO add delete funcitonality
-      // TODO log all the things are done before showing an answer
-      // TODO detect what part of speach is each word
-      // TODO implement auxiliary questions?
-      // TODO implement abreviation
-      // TODO add multiple pendng sentences as timestamps
-      if (hSV.pendingSentences.isNotEmpty) {
-        // print('response is waited');
-        // final word = await FirestoreM.searchWord(sentence);
-        // if (word == null) {
-        //   // TODO ask if this is a part of speach
-        // } else {
-        //   if (word.partOfSpeach == partOfSpeachS) {
-        //     // TODO set the part of speach of the pendinsentence to this
-        //   } else {
-        //     // TODO say that you need the part of speach of ... and you can answer with ...
-        //   }
-        // }
-        // // TODO check if it's a part of speach
-        // // switch (sentence) {
-        // //   case 'v':
-        // //     await FirestoreM.setPartOfSpeach(hSV.messages[1].text, verbS);
-        // //     // TODO send message like this is saved as this
-        // //     break;
-        // // }
-        // sentence = hSV.pendingSentences.v!;
+      late Word? word;
+
+      if (sentence.contains(' ')) {
+        print('contains spaces');
+        word = await FirestoreM.searchWord(sentence, collectionName: mwesS);
+      } else {
+        print('does not contain spaces');
+        word = await FirestoreM.searchWord(sentence);
       }
-      final lowercaseText = sentence.trim().toLowerCase();
+
+      if (word == null) {
+        print('The word $sentence does not exist in the database');
+        // TODO
+      } else {
+        if (word.tags.contains(partOfSpeachS)) {
+          print('${word.text} is a part of speach');
+          // TODO don't hard code this
+          String pattern = r'What part of speach is "(.+?)"\?';
+          Match? match = RegExp(pattern).firstMatch(pendingSentence);
+          if (match == null) {
+            print("U're not looking for a part of speach");
+            // TODO
+          } else {
+            String wordAsked = match.group(1)!;
+            print('wordAsked: $wordAsked');
+            await FirestoreM.setPartOfSpeach(wordAsked, sentence);
+            await ChatM.sendMessage(
+                Message(
+                  text: 'Set part of speach of "$wordAsked" to "$sentence"',
+                  isMe: false,
+                  isAux: true,
+                ),
+                hSV);
+            hSV.pendingSentences.removeLast();
+            await FirestoreM.modifyPendingSentences(hSV);
+            await processSentence(null, hSV);
+          }
+        } else {
+          // TODO check for abreviations
+          print(
+              'say that you need the part of speach of ... and you can answer with ...');
+          // TODO say that you need the part of speach of ... and you can answer with ...
+        }
+      }
+    } catch (e) {
+      print('this is from _processPendingSentence: $e');
+    }
+  }
+
+  static Future<void> processSentence(Message? message, HSV hSV) async {
+    try {
+      if (hSV.pendingSentences.isNotEmpty) {
+        print(hSV.pendingSentences);
+        final pendingSentence = hSV.messages
+            .where((e) => e.date == hSV.pendingSentences.last)
+            .first;
+        if (!pendingSentence.isMe) {
+          print('pending sentence (${pendingSentence.text}) is from jarvis');
+          await _processPendingSentenceFromJarvis(
+              pendingSentence.text, message!.text, hSV);
+          return;
+        }
+        print('pending sentence(${pendingSentence.text}) is from me');
+        message = pendingSentence;
+      }
+      final lowercaseText = message!.text.trim().toLowerCase();
       final words = lowercaseText.split(' ');
       List<String> partsOfSpeach = [];
       // TODO: assing numbers to each part of speach so you don't have to compare strings
       for (var text in words) {
         // print(word);
         final word = await FirestoreM.searchOrAddWord(text);
-        if (word.partOfSpeach != unknownS) {
+        if (word.partOfSpeach != '') {
           partsOfSpeach.add(word.partOfSpeach);
           continue;
         }
@@ -68,50 +113,52 @@ class JarvisM {
         final response = await MWApiM.dictGetJson(text);
         final data = json.decode(response);
         if (data is! List) {
-          partsOfSpeach.add(unknownS);
-          // print('not a list');
+          partsOfSpeach.add('');
+          print('not a list');
           continue;
         }
         if (data.isEmpty) {
-          partsOfSpeach.add(unknownS);
-          // print('empty list');
+          partsOfSpeach.add('');
+          print('empty list');
           continue;
         }
         if (data[0] is! Map) {
-          partsOfSpeach.add(unknownS);
-          // print('no maps in list');
+          partsOfSpeach.add('');
+          print('no maps in list');
           continue;
         }
-        word.partOfSpeach = oovWordS;
         if (data[0]['fl'] == null) {
-          partsOfSpeach.add(oovWordS);
-          // print('no fl');
+          partsOfSpeach.add('');
+          print('no fl');
           continue;
         }
         partsOfSpeach.add(data[0]['fl']);
         await FirestoreM.setPartOfSpeach(text, data[0]['fl']);
       }
+
       String response = '';
       for (int i = 0; i < words.length; i++) {
         response += '${words[i]}: ${partsOfSpeach[i]}\n';
-        if (partsOfSpeach[i] == oovWordS) {
-          hSV.pendingSentences.add(hSV.messages[0].date);
-          final message = Message(
-            text: 'What part of speach is the follwoing word?',
-            isAux: true,
-            isMe: false,
-          );
-          await ChatM.sendMessage(message, hSV);
-          final message2 = Message(
-            text: words[i],
-            isAux: true,
-            isMe: false,
-          );
-          await ChatM.sendMessage(message2, hSV);
-          return;
+        switch (partsOfSpeach[i]) {
+          case '':
+            // TODO solve the ineficiency of doing basically this function again
+            final date = hSV.messages.first.date;
+            hSV.pendingSentences.add(date);
+            await FirestoreM.modifyPendingSentences(hSV);
+            final message = Message(
+              text: 'What part of speach is "${words[i]}"?',
+              isAux: true,
+              isMe: false,
+            );
+            await ChatM.sendMessage(
+              message,
+              hSV,
+            );
+            hSV.pendingSentences.add(message.date);
+            await FirestoreM.modifyPendingSentences(hSV);
+            return;
         }
       }
-      // TODO set pendingSentence to null if everything goes smoothly
       print(response);
       await ChatM.sendMessage(Message(text: response, isMe: false), hSV);
 
@@ -130,14 +177,7 @@ class JarvisM {
       print(e);
     }
   }
-
-  static Future<String> askQuestion(String question) async {
-    // final completer = Completer<String>();
-    return '';
-  }
 }
-
-// List<String> auxVerbs = modalVerbs + auxiliaryVerbs + semiModalAuxVerbs;
 
 // List<String> modalVerbs = [
 //   "can",

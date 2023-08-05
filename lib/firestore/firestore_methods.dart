@@ -1,4 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:jarvis_1/methdos/chat/chat_methods.dart';
+import '/models/abreviation_model.dart';
+import '/models/m_w_e_model.dart';
 import '/models/word_model.dart';
 import '/models/message_model.dart';
 import '/utils.dart';
@@ -8,10 +11,79 @@ const messagesS = 'messages';
 const generalS = 'general';
 const chatNamesS = 'chatNames';
 const wordsS = 'words';
+const abreviationsS = 'abreviations';
+const mwesS = 'mwes';
+
 const pendingSentenceS = 'pendingSentence';
 
 class FirestoreM {
   static final firestore = FirebaseFirestore.instance;
+
+  static Future<String> resetJarvis() async {
+    try {
+      print('loading chat names');
+      final snap = await loadChatNames();
+      final chatNames = ((snap[chatNamesS] as List<dynamic>).cast<String>());
+      print(chatNames);
+      print('removing chats');
+      for (var chatName in chatNames) {
+        await removeChat(chatName);
+      }
+      print('removing abreviations collection');
+      await FirestoreM._deleteCollection(abreviationsS);
+      print('removing chats collection');
+      await FirestoreM._deleteCollection(chatsS);
+      print('removing general collection');
+      await FirestoreM._deleteCollection(generalS);
+      print('removing mwes collection');
+      await FirestoreM._deleteCollection(mwesS);
+      print('removing words collection');
+      await FirestoreM._deleteCollection(wordsS);
+      print('adding basic abreviations');
+      await FirestoreM.addBasicWords();
+      print('adding chat 1');
+      await FirestoreM.addChat('chat 1');
+      print('done');
+      return successS;
+    } catch (e) {
+      print('this is resetJarvis: $e');
+      return '$e';
+    }
+  }
+
+  static Future<String> modifyPendingSentences(HSV hSV) async {
+    try {
+      await firestore
+          .collection(chatsS)
+          .doc(hSV.chatName)
+          .update({pendingSentenceS: hSV.pendingSentences});
+      return successS;
+    } catch (e) {
+      print('this is modifyPendingSentences: $e');
+      return '$e';
+    }
+  }
+
+  static Future<String> addBasicWords() async {
+    try {
+      for (var word in basicWords) {
+        await firestore.collection(wordsS).doc(word.text).set(word.toJson());
+      }
+      for (var word in basicAbreviations) {
+        await firestore
+            .collection(abreviationsS)
+            .doc(word.text)
+            .set(word.toJson());
+      }
+      for (var word in basicMWE) {
+        await firestore.collection(mwesS).doc(word.text).set(word.toJson());
+      }
+      return successS;
+    } catch (e) {
+      print('this is basicWords: $e');
+      return '$e';
+    }
+  }
 
   static Future<String> setPartOfSpeach(
       String word, String partOfSpeach) async {
@@ -26,9 +98,10 @@ class FirestoreM {
     }
   }
 
-  static Future<Word?> searchWord(String text) async {
+  static Future<Word?> searchWord(String text, {String? collectionName}) async {
     try {
-      final snap = await firestore.collection(wordsS).doc(text).get();
+      collectionName = collectionName ?? wordsS;
+      final snap = await firestore.collection(collectionName).doc(text).get();
       if (snap.exists) {
         return Word.fromJson(snap.data()!);
       }
@@ -69,6 +142,9 @@ class FirestoreM {
         await firestore.collection(generalS).doc(chatsS).set({
           chatNamesS: [chatName]
         });
+        await firestore.collection(chatsS).doc(chatName).set({
+          pendingSentenceS: [],
+        });
         return successS;
       }
       print('this is addChat: $e');
@@ -80,20 +156,7 @@ class FirestoreM {
     try {
       return await firestore.collection(generalS).doc(chatsS).get();
     } catch (e) {
-      print('this is loadChatNames: $e');
-      throw Error();
-    }
-  }
-
-  static Future<QuerySnapshot> loadMessages(chatName) async {
-    try {
-      return await firestore
-          .collection(chatsS)
-          .doc(chatName)
-          .collection(messagesS)
-          .get();
-    } catch (e) {
-      print('this is loadMessages: $e');
+      print('this is loadChatNames from firestore: $e');
       throw Error();
     }
   }
@@ -140,6 +203,17 @@ class FirestoreM {
       return successS;
     } catch (e) {
       print('this is removeChat: $e');
+      return '$e';
+    }
+  }
+
+  static Future<String> _deleteCollection(String collectionName) async {
+    try {
+      final snap = await firestore.collection(collectionName).get();
+      await Future.wait(snap.docs.map((doc) => doc.reference.delete()));
+      return successS;
+    } catch (e) {
+      print('this is deleteCollection: $e');
       return '$e';
     }
   }

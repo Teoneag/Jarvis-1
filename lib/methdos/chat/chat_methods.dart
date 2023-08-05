@@ -6,16 +6,18 @@ import '/models/message_model.dart';
 import '/firestore/firestore_methods.dart';
 import '/utils.dart';
 
+// TODO if 2 chats have the same name
+
 class ChatM {
   static Future addDialog(
       BuildContext context, TextEditingController titleC, HSV hSV) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add a task'),
+        title: const Text('Add a chat'),
         content: TextField(
           controller: titleC,
-          decoration: const InputDecoration(hintText: 'Type your task'),
+          decoration: const InputDecoration(hintText: 'Type your chat name'),
           autofocus: true,
           onSubmitted: (value) {
             Navigator.of(context).pop();
@@ -106,6 +108,7 @@ class ChatM {
   static Future loadChatNamesAndChat(HSV hSV) async {
     await loadChatNames(hSV);
     if (hSV.chatNames.isNotEmpty) {
+      hSV.navIndex.v = 0;
       await loadMessages(hSV);
     }
   }
@@ -135,7 +138,12 @@ class ChatM {
 
         final snap2 = await FirestoreM.loadChat(hSV.chatName);
         hSV.pendingSentences.clear();
-        hSV.pendingSentences.addAll(snap2[pendingSentenceS]);
+        // hSV.pendingSentences
+        //     .addAll((snap2[pendingSentenceS] as List).cast<DateTime>());
+
+        hSV.pendingSentences.addAll(List<DateTime>.from(
+            (snap2[pendingSentenceS])
+                .map((timestamp) => (timestamp).toDate())));
       } catch (e) {
         print('This is loadMessages: $e');
       }
@@ -150,7 +158,7 @@ class ChatM {
         textC.clear();
         Message message = Message(text: text);
         await sendMessage(message, hSV);
-        await JarvisM.processSentence(text, hSV);
+        await JarvisM.processSentence(message, hSV);
       } catch (e) {
         print(e);
       }
@@ -188,6 +196,38 @@ class ChatM {
       } else {
         c.text = messages[i.v].text;
       }
+    }
+  }
+
+  static Future<String> resetJarvis(BuildContext context, HSV hSV) async {
+    try {
+      // TODO show loading while reseting
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Reset jarvis'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await FirestoreM.resetJarvis();
+                loadChatNamesAndChat(hSV);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Reset jarvis'),
+            ),
+          ],
+        ),
+      );
+      return successS;
+    } catch (e) {
+      print('this is resetJarvis: $e');
+      return '$e';
     }
   }
 }

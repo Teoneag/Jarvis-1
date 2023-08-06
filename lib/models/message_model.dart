@@ -4,7 +4,7 @@ const idS = 'id';
 const textS = 'text';
 const dateS = 'date';
 const isMeS = 'isMe';
-const isAuxS = 'isAux';
+const indentS = 'indent';
 
 // TODO: save /n
 
@@ -13,26 +13,24 @@ class Message {
   String text;
   DateTime date;
   bool isMe;
-  bool isAux;
+  int indent; // 0 = normal text, 1 = indent, 2 = indent more
 
   Message(
-      {required this.text,
-      String? uid,
-      DateTime? date,
-      bool? isMe,
-      bool? isAux})
-      : uid = uid ?? const Uuid().v1(),
-        date = date ?? DateTime.now(),
-        isMe = isMe ?? true,
-        isAux = isAux ?? false;
+    this.text, {
+    String? uid,
+    DateTime? date,
+    this.isMe = true,
+    this.indent = 0,
+  })  : uid = uid ?? const Uuid().v1(),
+        date = date ?? DateTime.now();
 
   factory Message.fromSnap(String uid, Map<String, dynamic> json) {
     return Message(
+      json[textS],
       uid: uid,
-      text: json[textS],
       date: DateTime.parse(json[dateS]),
       isMe: json[isMeS],
-      isAux: json[isAuxS],
+      indent: json[indentS],
     );
   }
 
@@ -40,6 +38,6 @@ class Message {
         textS: text,
         dateS: date.toString(),
         isMeS: isMe,
-        isAuxS: isAux,
+        indentS: indent,
       };
 }

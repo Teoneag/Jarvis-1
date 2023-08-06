@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<DateTime> pendngSentences = [];
   final List<String> chatNames = [];
   final List<Message> messages = [];
+  final indent = IntW(0);
 
   // late final SyncObj sO;
   late final HSV hSV;
@@ -44,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       messages,
       onIndexChange,
       onRailChange,
+      indent,
       setState,
     );
     ChatM.loadChatNamesAndChat(hSV);
@@ -75,11 +77,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ])
               : Container(),
           Expanded(
-            child: isChatSyncing.v
-                ? loadingCenter()
-                : chatNames.isEmpty
-                    ? const Text('Please select a chat')
-                    : ChatWidget(hSV),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: isChatSyncing.v
+                  ? loadingCenter()
+                  : chatNames.isEmpty
+                      ? const Text('Please select a chat')
+                      : ChatWidget(hSV),
+            ),
           ),
         ],
       ),

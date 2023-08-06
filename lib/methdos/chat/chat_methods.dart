@@ -138,9 +138,6 @@ class ChatM {
 
         final snap2 = await FirestoreM.loadChat(hSV.chatName);
         hSV.pendingSentences.clear();
-        // hSV.pendingSentences
-        //     .addAll((snap2[pendingSentenceS] as List).cast<DateTime>());
-
         hSV.pendingSentences.addAll(List<DateTime>.from(
             (snap2[pendingSentenceS])
                 .map((timestamp) => (timestamp).toDate())));
@@ -156,7 +153,7 @@ class ChatM {
         final text = textC.text.trim();
         if (text.isEmpty) return;
         textC.clear();
-        Message message = Message(text: text);
+        Message message = Message(text, indent: hSV.indent.v);
         await sendMessage(message, hSV);
         await JarvisM.processSentence(message, hSV);
       } catch (e) {
@@ -253,6 +250,7 @@ class HSV {
   final List<Message> messages;
   final void Function(int) onIndexChange;
   final void Function() onRailChange;
+  final IntW indent;
   final StateSetter setState;
 
   HSV(
@@ -266,6 +264,7 @@ class HSV {
     this.messages,
     this.onIndexChange,
     this.onRailChange,
+    this.indent,
     this.setState,
   );
 

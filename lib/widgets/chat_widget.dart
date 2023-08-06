@@ -39,9 +39,8 @@ class _ChatWidgetState extends State<ChatWidget> {
                 shape: const RoundedRectangleBorder(
                   side: BorderSide(color: Colors.black, width: 1),
                 ),
-                contentPadding: message.isAux
-                    ? const EdgeInsets.symmetric(horizontal: 50)
-                    : null,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: message.indent * 50),
                 title: Align(
                     alignment: message.isMe
                         ? Alignment.centerRight

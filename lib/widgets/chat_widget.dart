@@ -38,8 +38,7 @@ class _ChatWidgetState extends State<ChatWidget> {
               return message.indent < 0
                   ? Padding(
                       padding: EdgeInsets.symmetric(
-                          // horizontal: -message.indent * 20
-                          ),
+                          horizontal: -(message.indent + 1) * 20),
                       child: Text(
                         message.text,
                         style:

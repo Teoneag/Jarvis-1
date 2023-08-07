@@ -48,6 +48,7 @@ class ChatM {
   static Future _addChat(String chatName, HSV hSV) async {
     hSV.chatNames.add(chatName);
     hSV.onIndexChange(hSV.chatNames.length - 1);
+    hSV.indent.v = 0;
     await FirestoreM.addChat(chatName);
   }
 
@@ -166,7 +167,7 @@ class ChatM {
     try {
       hSV.messages.insert(0, message);
       hSV.setState(() {});
-      await FirestoreM.sendMessage(message, hSV.chatName);
+      FirestoreM.sendMessage(message, hSV.chatName);
       // print(JarvisM.isSentenceQuestion(textC.text));
     } catch (e) {
       print(e);
@@ -251,6 +252,7 @@ class HSV {
   final void Function(int) onIndexChange;
   final void Function() onRailChange;
   final IntW indent;
+  final IntW logIndent;
   final StateSetter setState;
 
   HSV(
@@ -265,6 +267,7 @@ class HSV {
     this.onIndexChange,
     this.onRailChange,
     this.indent,
+    this.logIndent,
     this.setState,
   );
 

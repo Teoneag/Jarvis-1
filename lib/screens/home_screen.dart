@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<String> chatNames = [];
   final List<Message> messages = [];
   final indent = IntW(0);
+  final logIndent = IntW(1);
 
   // late final SyncObj sO;
   late final HSV hSV;
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onIndexChange,
       onRailChange,
       indent,
+      logIndent,
       setState,
     );
     JarvisM.hSV = hSV;

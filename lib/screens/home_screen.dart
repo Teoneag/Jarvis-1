@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jarvis_1/methdos/jarvis/jarvis_methods.dart';
 import '/utils.dart';
 import '/models/message_model.dart';
 import '/methdos/chat/chat_methods.dart';
@@ -48,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
       indent,
       setState,
     );
+    JarvisM.hSV = hSV;
     ChatM.loadChatNamesAndChat(hSV);
   }
 

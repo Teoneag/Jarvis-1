@@ -25,31 +25,32 @@ import '/merriam_webster/m_w_api_methods.dart';
 
 // TODO add delete info funcitonality
 // TODO Add to jarvis: common actions
-// TODO log all the things are done before showing an answer
-// TODO detect what part of speach is each word
 // TODO solve pb when changing chats while processing
 // TODO implement abreviation
+// TODO add time + indentation to log
+// TODO remove waiting time by doing multiple things at the same time
 
 class JarvisM {
+  static late HSV hSV;
   static Future<void> _processPendingSentenceFromJarvis(
-      String pendingSentence, String message, HSV hSV) async {
+      String pendingSentence, String message) async {
     try {
       late Word? word;
 
       if (message.contains(' ')) {
-        print('contains spaces');
+        log('Your response contains spaces => looking in mwes');
         word = await FirestoreM.searchWord(message, collectionName: mwesS);
       } else {
-        print('does not contain spaces');
+        log("Your response doesn't contain spaces => looking in words");
         word = await FirestoreM.searchWord(message);
       }
 
       if (word == null) {
-        print('The word $message does not exist in the database');
+        log('The word $message does not exist in the database');
         // TODO
       } else {
         if (word.tags.contains(partOfSpeachS)) {
-          print('${word.text} is a part of speach');
+          log('"${word.text}" is a part of speach');
           // TODO don't hard code this
           String pattern = r'What part of speach is "(.+?)"\?';
           Match? match = RegExp(pattern).firstMatch(pendingSentence);
@@ -58,20 +59,13 @@ class JarvisM {
             // TODO
           } else {
             String wordAsked = match.group(1)!;
-            print('wordAsked: $wordAsked');
+            log('Set part of speach of "$wordAsked" to "$message"');
             await FirestoreM.setPartOfSpeach(wordAsked, message);
-            await ChatM.sendMessage(
-                Message(
-                  'Set part of speach of "$wordAsked" to "$message"',
-                  isMe: false,
-                  indent: hSV.indent.v,
-                ),
-                hSV);
+            log('Removing pending sentence');
             hSV.pendingSentences.removeLast();
             hSV.indent.v--;
             await FirestoreM.modifyPendingSentences(hSV);
-            print('done');
-            await processSentence(null, hSV);
+            await processSentence(null);
           }
         } else {
           // TODO check for abreviations
@@ -85,20 +79,19 @@ class JarvisM {
     }
   }
 
-  static Future<void> processSentence(Message? message, HSV hSV) async {
+  static Future<void> processSentence(Message? message) async {
     try {
       if (hSV.pendingSentences.isNotEmpty) {
-        print(hSV.pendingSentences);
         final pendingSentence = hSV.messages
             .where((e) => e.date == hSV.pendingSentences.last)
             .first;
         if (!pendingSentence.isMe) {
-          print('pending sentence (${pendingSentence.text}) is from jarvis');
+          log('Processing pending sentence "${pendingSentence.text}" from jarvis, with response "${message!.text}"');
           await _processPendingSentenceFromJarvis(
-              pendingSentence.text, message!.text, hSV);
+              pendingSentence.text, message.text);
           return;
         }
-        print('pending sentence(${pendingSentence.text}) is from me');
+        log('Processing pending sentence "${pendingSentence.text}" from me, with response "${message?.text}"');
         message = pendingSentence;
         hSV.pendingSentences.removeLast();
         await FirestoreM.modifyPendingSentences(hSV);
@@ -106,45 +99,50 @@ class JarvisM {
 
       final lowercaseText = message!.text.trim().toLowerCase();
       final words = lowercaseText.split(' ');
+      log('Words to be processed: $words');
       List<String> partsOfSpeach = [];
       // TODO: assing numbers to each part of speach so you don't have to compare strings
       for (var text in words) {
+        log('Processing word "$text"');
         final word = await FirestoreM.searchOrAddWord(text);
         if (word.partOfSpeach != '') {
+          log('"$text" found in database');
           partsOfSpeach.add(word.partOfSpeach);
           continue;
         }
-
+        log('"$text" not found in database, searching in merriam webster');
         final data = json.decode(await MWApiM.dictGetJson(text));
         if (data is! List) {
           partsOfSpeach.add('');
-          print('not a list');
+          log('The response: Not a list');
           continue;
         }
         if (data.isEmpty) {
           partsOfSpeach.add('');
-          print('empty list');
+          log('The response: empty list');
           continue;
         }
         if (data[0] is! Map) {
           partsOfSpeach.add('');
-          print('no maps in list');
+          log('The response: no maps in list');
           continue;
         }
         if (data[0]['fl'] == null) {
           partsOfSpeach.add('');
-          print('no fl');
+          log('The response: no fl');
           continue;
         }
+        log('"$text" found properly in merriam websler => setting part of speach to "${data[0]['fl']}"');
         partsOfSpeach.add(data[0]['fl']);
         await FirestoreM.setPartOfSpeach(text, data[0]['fl']);
       }
-
+      log('Done with all words, now going to each one of them');
       String response = '';
       for (int i = 0; i < words.length; i++) {
         response += '${words[i]}: ${partsOfSpeach[i]}\n';
         switch (partsOfSpeach[i]) {
           case '':
+            log('"${words[i]}"\'s part of speach is not known => asking');
             // TODO solve the ineficiency of doing basically this function again
             hSV.pendingSentences.add(message.date);
             await FirestoreM.modifyPendingSentences(hSV);
@@ -163,10 +161,11 @@ class JarvisM {
             return;
         }
       }
+      log('Done with all words, now sending response');
       print(response);
       await ChatM.sendMessage(
           Message(
-            'Response to ${message.text} $response',
+            'Response to "${message.text}"\n $response',
             isMe: false,
             indent: hSV.indent.v,
           ),
@@ -186,6 +185,16 @@ class JarvisM {
     } catch (e) {
       print('This is processSentence: $e');
     }
+  }
+
+  static Future<void> log(String text) async {
+    await ChatM.sendMessage(
+        Message(
+          text,
+          isMe: false,
+          indent: -1,
+        ),
+        hSV);
   }
 }
 

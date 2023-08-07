@@ -155,7 +155,7 @@ class ChatM {
         textC.clear();
         Message message = Message(text, indent: hSV.indent.v);
         await sendMessage(message, hSV);
-        await JarvisM.processSentence(message, hSV);
+        await JarvisM.processSentence(message);
       } catch (e) {
         print(e);
       }

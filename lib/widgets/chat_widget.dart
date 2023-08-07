@@ -35,18 +35,29 @@ class _ChatWidgetState extends State<ChatWidget> {
             itemCount: widget.hSV.messages.length,
             itemBuilder: (context, index) {
               final message = widget.hSV.messages[index];
-              return ListTile(
-                shape: const RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.black, width: 1),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: message.indent * 50),
-                title: Align(
-                    alignment: message.isMe
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Text(message.text)),
-              );
+              return message.indent < 0
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(
+                          // horizontal: -message.indent * 20
+                          ),
+                      child: Text(
+                        message.text,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 10),
+                      ),
+                    )
+                  : ListTile(
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: message.indent * 50),
+                      title: Align(
+                        alignment: message.isMe
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Text(
+                          message.text,
+                        ),
+                      ),
+                    );
             },
           ),
         ),

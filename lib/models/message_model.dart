@@ -13,7 +13,7 @@ class Message {
   String text;
   DateTime date;
   bool isMe;
-  int indent; // 0 = normal text, 1 = indent, 2 = indent more
+  int indent; // 0 = normal text, 1 = indent, 2 = indent more, -1: log
 
   Message(
     this.text, {

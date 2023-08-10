@@ -24,7 +24,7 @@ class NavBar1 extends StatelessWidget {
                           label: Text(hSV.chatNames[i]),
                         )
                     ],
-                    selectedIndex: hSV.navIndex.v,
+                    selectedIndex: hSV.navIndex,
                     onDestinationSelected: (int index) =>
                         hSV.onIndexChange(index),
                   );
@@ -37,7 +37,7 @@ Widget railTile(
   int removeI,
 ) {
   return GestureDetector(
-    onLongPress: () => ChatM.removeDialog(hSV, context, hSV.navIndex.v),
+    onLongPress: () => ChatM.removeDialog(hSV, context, hSV.navIndex),
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Text(

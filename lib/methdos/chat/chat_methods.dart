@@ -92,12 +92,12 @@ class ChatM {
         hSV.chatNames.removeAt(removeI);
       });
       if (hSV.chatNames.isNotEmpty) {
-        if (removeI == hSV.navIndex.v) {
-          int newI = hSV.navIndex.v - 1;
+        if (removeI == hSV.navIndex) {
+          int newI = hSV.navIndex - 1;
           if (newI < 0) newI = 0;
           hSV.onIndexChange(newI);
-        } else if (removeI < hSV.navIndex.v) {
-          hSV.onIndexChange(hSV.navIndex.v - 1);
+        } else if (removeI < hSV.navIndex) {
+          hSV.onIndexChange(hSV.navIndex - 1);
         }
       }
       await FirestoreM.removeChat(chatName);
@@ -118,7 +118,7 @@ class ChatM {
     await loadChatNames(hSV);
     cOList.clear();
     if (hSV.chatNames.isNotEmpty) {
-      hSV.navIndex.v = 0;
+      hSV.navIndex = 0;
       for (int i = 0; i < hSV.chatNames.length; i++) {
         cOList.add(ChatObj([], [], IntW(0), IntW(0)));
         await loadMessages(hSV, cOList[i]);
@@ -258,7 +258,7 @@ class HSV {
   final BoolW isRailSyncing;
   final BoolW isChatSyncing;
   final BoolW isRailHidden;
-  final IntW navIndex;
+  int navIndex;
   final List<String> chatNames;
   final void Function(int) onIndexChange;
   final void Function() onRailChange;
@@ -276,7 +276,7 @@ class HSV {
     this.setState,
   );
 
-  String get chatName => chatNames[navIndex.v];
+  String get chatName => chatNames[navIndex];
 }
 
 class ChatObj {

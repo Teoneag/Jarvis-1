@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final isRailSyncing = BoolW(false);
   final isChatSyncing = BoolW(false);
   final isRailHidden = BoolW(false);
-  final navIndex = IntW(0);
+  int navIndex = 0;
   final List<DateTime> pendngSentences = [];
   final List<String> chatNames = [];
   final List<Message> messages = [];
@@ -55,7 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void onIndexChange(int index) {
     setState(() {
-      navIndex.v = index;
+      navIndex = index;
+      print('Index changed: $navIndex');
     });
   }
 
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? loadingCenter()
                   : chatNames.isEmpty
                       ? const Text('Please select a chat')
-                      : ChatWidget(hSV, cOList[navIndex.v]),
+                      : ChatWidget(hSV, cOList[navIndex]),
             ),
           ),
         ],

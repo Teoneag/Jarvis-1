@@ -4,7 +4,8 @@ import '/utils.dart';
 
 class ChatWidget extends StatefulWidget {
   final HSV hSV;
-  const ChatWidget(this.hSV, {super.key});
+  final ChatObj cO;
+  const ChatWidget(this.hSV, this.cO, {super.key});
 
   @override
   State<ChatWidget> createState() => _ChatWidgetState();
@@ -32,9 +33,9 @@ class _ChatWidgetState extends State<ChatWidget> {
         Expanded(
           child: ListView.builder(
             reverse: true,
-            itemCount: widget.hSV.messages.length,
+            itemCount: widget.cO.messages.length,
             itemBuilder: (context, index) {
-              final message = widget.hSV.messages[index];
+              final message = widget.cO.messages[index];
               return message.indent < 0
                   ? Padding(
                       padding: EdgeInsets.symmetric(
@@ -65,7 +66,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           child: RawKeyboardListener(
             focusNode: FocusNode(),
             onKey: (event) => ChatM.handleKeyPress(
-                event, messageIndex, messageC, widget.hSV.messages),
+                event, messageIndex, messageC, widget.cO.messages),
             child: TextField(
                 autofocus: true,
                 focusNode: focusNode,
@@ -74,12 +75,13 @@ class _ChatWidgetState extends State<ChatWidget> {
                   hintText: 'Type a message',
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
-                    onPressed: () => ChatM.sendMessageMe(widget.hSV, messageC),
+                    onPressed: () =>
+                        ChatM.sendMessageMe(widget.hSV, widget.cO, messageC),
                     icon: const Icon(Icons.send),
                   ),
                 ),
                 onSubmitted: (_) {
-                  ChatM.sendMessageMe(widget.hSV, messageC);
+                  ChatM.sendMessageMe(widget.hSV, widget.cO, messageC);
                   focusNode.requestFocus(); // TODO: Make it autoscroll
                 }),
           ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jarvis_1/methdos/jarvis/jarvis_methods.dart';
+import '/methdos/jarvis/jarvis_methods.dart';
 import '/utils.dart';
 import '/models/message_model.dart';
 import '/methdos/chat/chat_methods.dart';
@@ -14,6 +14,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+// TODO modify this to use global variables
+
 class _HomeScreenState extends State<HomeScreen> {
   final isAppSyncing = BoolW(false);
   final isRailSyncing = BoolW(false);
@@ -26,40 +28,35 @@ class _HomeScreenState extends State<HomeScreen> {
   final indent = IntW(0);
   final logIndent = IntW(1);
 
-  // late final SyncObj sO;
   late final HSV hSV;
+  final List<ChatObj> cOList = [];
+  // late final ChatObj cO;
+
+  // list ChatObj, one for every chat
 
   @override
   void initState() {
     super.initState();
-    // rO = RailObj(chatNames, SyncObj(setState, isRailSyncing));
-    // cO = ChatObj(
-    //     '', messages, SyncObj(setState, isChatSyncing), isRespondWaited);
-    // sO = SyncObj(setState, isAppSyncing);
     hSV = HSV(
       isAppSyncing,
       isRailSyncing,
       isChatSyncing,
       isRailHidden,
-      pendngSentences,
       navIndex,
       chatNames,
-      messages,
       onIndexChange,
       onRailChange,
-      indent,
-      logIndent,
       setState,
     );
+
     JarvisM.hSV = hSV;
-    ChatM.loadChatNamesAndChat(hSV);
+    ChatM.laodChatNamesAndChatList(hSV, cOList);
   }
 
   void onIndexChange(int index) {
     setState(() {
       navIndex.v = index;
     });
-    ChatM.loadMessages(hSV);
   }
 
   void onRailChange() {
@@ -71,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar1(hSV),
+      // appBar: AppBar1(hSV, cOList[navIndex.v]),
       body: Row(
         children: [
           !isRailHidden.v
@@ -87,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? loadingCenter()
                   : chatNames.isEmpty
                       ? const Text('Please select a chat')
-                      : ChatWidget(hSV),
+                      : ChatWidget(hSV, cOList[navIndex.v]),
             ),
           ),
         ],

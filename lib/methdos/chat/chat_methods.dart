@@ -9,8 +9,8 @@ import '/utils.dart';
 // TODO if 2 chats have the same name
 
 class ChatM {
-  static Future addDialog(
-      BuildContext context, TextEditingController titleC, HSV hSV) async {
+  static Future addDialog(BuildContext context, TextEditingController titleC,
+      HSV hSV, List<ChatObj> cOList) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -21,7 +21,7 @@ class ChatM {
           autofocus: true,
           onSubmitted: (value) {
             Navigator.of(context).pop();
-            _addChat(titleC.text, hSV);
+            _addChat(titleC.text, hSV, cOList);
             titleC.clear();
           },
         ),
@@ -35,7 +35,7 @@ class ChatM {
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              _addChat(titleC.text, hSV);
+              _addChat(titleC.text, hSV, cOList);
               titleC.clear();
             },
             child: const Text('Add'),
@@ -45,10 +45,10 @@ class ChatM {
     );
   }
 
-  static Future _addChat(String chatName, HSV hSV) async {
+  static Future _addChat(String chatName, HSV hSV, List<ChatObj> cOList) async {
     hSV.chatNames.add(chatName);
     hSV.onIndexChange(hSV.chatNames.length - 1);
-    hSV.indent.v = 0;
+    cOList[hSV.chatNames.length - 1].indent.v = 0;
     await FirestoreM.addChat(chatName);
   }
 
@@ -106,11 +106,23 @@ class ChatM {
     }
   }
 
-  static Future loadChatNamesAndChat(HSV hSV) async {
+  // static Future loadChatNamesAndChat(HSV hSV, ChatObj cO) async {
+  //   await loadChatNames(hSV);
+  //   if (hSV.chatNames.isNotEmpty) {
+  //     hSV.navIndex.v = 0;
+  //     await loadMessages(hSV, cO);
+  //   }
+  // }
+
+  static Future laodChatNamesAndChatList(HSV hSV, List<ChatObj> cOList) async {
     await loadChatNames(hSV);
+    cOList.clear();
     if (hSV.chatNames.isNotEmpty) {
       hSV.navIndex.v = 0;
-      await loadMessages(hSV);
+      for (int i = 0; i < hSV.chatNames.length; i++) {
+        cOList.add(ChatObj([], [], IntW(0), IntW(0)));
+        await loadMessages(hSV, cOList[i]);
+      }
     }
   }
 
@@ -127,45 +139,45 @@ class ChatM {
     });
   }
 
-  static Future loadMessages(HSV hSV) async {
+  static Future loadMessages(HSV hSV, ChatObj cO) async {
     await syncFun(SyncObj(hSV.setState, hSV.isChatSyncing), () async {
       try {
         final snap = await FirestoreM.loadMessagesByTimestamp(hSV.chatName);
-        hSV.messages.clear();
-        hSV.messages.addAll(snap.docs
+        cO.messages.clear();
+        cO.messages.addAll(snap.docs
             .map((doc) =>
                 Message.fromSnap(doc.id, doc.data() as Map<String, dynamic>))
             .toList());
 
         final snap2 = await FirestoreM.loadChat(hSV.chatName);
-        hSV.pendingSentences.clear();
-        hSV.pendingSentences.addAll(List<DateTime>.from(
-            (snap2[pendingSentenceS])
-                .map((timestamp) => (timestamp).toDate())));
+        cO.pendingSentences.clear();
+        cO.pendingSentences.addAll(List<DateTime>.from((snap2[pendingSentenceS])
+            .map((timestamp) => (timestamp).toDate())));
       } catch (e) {
         print('This is loadMessages: $e');
       }
     });
   }
 
-  static Future sendMessageMe(HSV hSV, TextEditingController textC) async {
+  static Future sendMessageMe(
+      HSV hSV, ChatObj cO, TextEditingController textC) async {
     syncFun(SyncObj(hSV.setState, hSV.isAppSyncing), () async {
       try {
         final text = textC.text.trim();
         if (text.isEmpty) return;
         textC.clear();
-        Message message = Message(text, indent: hSV.indent.v);
-        await sendMessage(message, hSV);
-        await JarvisM.processSentence(message);
+        Message message = Message(text, indent: cO.indent.v);
+        await sendMessage(message, hSV, cO);
+        await JarvisM.processSentence(message, cO);
       } catch (e) {
         print(e);
       }
     });
   }
 
-  static Future sendMessage(Message message, HSV hSV) async {
+  static Future sendMessage(Message message, HSV hSV, ChatObj cO) async {
     try {
-      hSV.messages.insert(0, message);
+      cO.messages.insert(0, message);
       hSV.setState(() {});
       FirestoreM.sendMessage(message, hSV.chatName);
       // print(JarvisM.isSentenceQuestion(textC.text));
@@ -197,7 +209,8 @@ class ChatM {
     }
   }
 
-  static Future<String> resetJarvis(BuildContext context, HSV hSV) async {
+  static Future<String> resetJarvis(
+      BuildContext context, HSV hSV, List<ChatObj> cOList) async {
     try {
       // TODO show loading while reseting
       showDialog(
@@ -214,7 +227,7 @@ class ChatM {
             TextButton(
               onPressed: () async {
                 await FirestoreM.resetJarvis();
-                loadChatNamesAndChat(hSV);
+                laodChatNamesAndChatList(hSV, cOList);
                 Navigator.of(context).pop();
               },
               child: const Text('Reset jarvis'),
@@ -245,14 +258,10 @@ class HSV {
   final BoolW isRailSyncing;
   final BoolW isChatSyncing;
   final BoolW isRailHidden;
-  final List<DateTime> pendingSentences;
   final IntW navIndex;
   final List<String> chatNames;
-  final List<Message> messages;
   final void Function(int) onIndexChange;
   final void Function() onRailChange;
-  final IntW indent;
-  final IntW logIndent;
   final StateSetter setState;
 
   HSV(
@@ -260,16 +269,26 @@ class HSV {
     this.isRailSyncing,
     this.isChatSyncing,
     this.isRailHidden,
-    this.pendingSentences,
     this.navIndex,
     this.chatNames,
-    this.messages,
     this.onIndexChange,
     this.onRailChange,
-    this.indent,
-    this.logIndent,
     this.setState,
   );
 
   String get chatName => chatNames[navIndex.v];
+}
+
+class ChatObj {
+  final List<DateTime> pendingSentences;
+  final List<Message> messages;
+  final IntW indent;
+  final IntW logIndent;
+
+  ChatObj(
+    this.pendingSentences,
+    this.messages,
+    this.indent,
+    this.logIndent,
+  );
 }

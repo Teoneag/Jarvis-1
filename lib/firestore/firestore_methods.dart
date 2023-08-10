@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:jarvis_1/methdos/chat/chat_methods.dart';
 import '/models/abreviation_model.dart';
 import '/models/m_w_e_model.dart';
 import '/models/word_model.dart';
@@ -51,12 +50,13 @@ class FirestoreM {
     }
   }
 
-  static Future<String> modifyPendingSentences(HSV hSV) async {
+  static Future<String> modifyPendingSentences(
+      List<DateTime> pendingSentences, String chatName) async {
     try {
       await firestore
           .collection(chatsS)
-          .doc(hSV.chatName)
-          .update({pendingSentenceS: hSV.pendingSentences});
+          .doc(chatName)
+          .update({pendingSentenceS: pendingSentences});
       return successS;
     } catch (e) {
       print('this is modifyPendingSentences: $e');

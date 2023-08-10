@@ -3,8 +3,9 @@ import '/methdos/chat/chat_methods.dart';
 
 class AppBar1 extends StatefulWidget implements PreferredSizeWidget {
   final HSV hSV;
+  final List<ChatObj> cOList;
 
-  const AppBar1(this.hSV, {super.key});
+  const AppBar1(this.hSV, this.cOList, {super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -32,7 +33,8 @@ class _AppBar1State extends State<AppBar1> {
       title: const Text('Jarvis'), // TODO: change to conv name or date
       actions: [
         IconButton(
-          onPressed: () => ChatM.addDialog(context, _titleC, widget.hSV),
+          onPressed: () =>
+              ChatM.addDialog(context, _titleC, widget.hSV, widget.cOList),
           icon: const Icon(Icons.add),
         ),
         // TODO: make the sync work
@@ -45,7 +47,8 @@ class _AppBar1State extends State<AppBar1> {
                 icon: const Icon(Icons.sync),
               ),
         IconButton(
-          onPressed: () => ChatM.resetJarvis(context, widget.hSV),
+          onPressed: () =>
+              ChatM.resetJarvis(context, widget.hSV, widget.cOList),
           icon: const Icon(Icons.dangerous),
           color: Colors.red,
         ),

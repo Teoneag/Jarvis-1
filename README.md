@@ -5,6 +5,10 @@ By Teodor Neagoe
 - Personal assistant (like Jarvis form Iron Man)
 - Just a rather intelligent system"
 - = app that helps with daily + professional tasks
+- combine the functionality of Alexa + Todoist + OneNote + ...
+
+## Mechanism
+Stores information "like the brain": connections between data, so it can do what it's been thought with 100% accuracy, unlike AI.
 
 ## Plan
 1. Make chat like interface (then add sound -> text, text -> sound, then also img...)

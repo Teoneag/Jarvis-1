@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 // TODO modify this to use global variables
+// TODO make it work globally
 
 class _HomeScreenState extends State<HomeScreen> {
   final isAppSyncing = BoolW(false);

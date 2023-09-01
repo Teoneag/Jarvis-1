@@ -7,6 +7,7 @@ import '/firestore/firestore_methods.dart';
 import '/utils.dart';
 
 // TODO if 2 chats have the same name
+// TODO make syncing manager: make it work offline as well with shared preferences
 
 class ChatM {
   static Future addDialog(BuildContext context, TextEditingController titleC,

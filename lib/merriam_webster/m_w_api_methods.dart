@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+
 import '/merriam_webster/m_w_api_key.dart';
 
 const baseUrl = 'https://dictionaryapi.com/api/v3/references/';
